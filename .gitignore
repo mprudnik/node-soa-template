@@ -1,0 +1,8 @@
+node_modules
+/log/
+*.log
+*.pem
+*.done
+.DS_Store
+.env
+prisma/json-schema.json

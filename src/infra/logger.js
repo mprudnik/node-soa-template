@@ -1,0 +1,39 @@
+import { pino } from 'pino';
+
+const PinoLevelToSeverityLookup = {
+  trace: 'DEBUG',
+  debug: 'DEBUG',
+  info: 'INFO',
+  warn: 'WARNING',
+  error: 'ERROR',
+  fatal: 'CRITICAL',
+};
+
+const options = {
+  development: {
+    level: 'trace',
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        ignore: 'pid,hostname',
+      },
+    },
+  },
+  production: {
+    messageKey: 'message',
+    formatters: {
+      level(label, number) {
+        return {
+          severity:
+            PinoLevelToSeverityLookup[label] || PinoLevelToSeverityLookup.info,
+          level: number,
+        };
+      },
+    },
+  },
+  test: {
+    level: 'silent',
+  },
+};
+
+export const init = ({ env }) => pino(options[env]);
