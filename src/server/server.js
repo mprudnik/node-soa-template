@@ -5,6 +5,7 @@ import { auth } from './plugins/auth.js';
 import { cors } from './plugins/cors.js';
 import { swagger } from './plugins/swagger.js';
 import { websocket } from './plugins/websocket.js';
+import { context } from './plugins/context.js';
 import { handleError } from '../lib/error.js';
 
 const objectProps = { type: 'object', additionalProperties: false };
@@ -42,6 +43,13 @@ export const init = async (router, infra, config) => {
   await server.register(swagger(config.swagger));
   await server.register(websocket({}));
   await server.register(auth({}));
+  await server.register(
+    context({
+      defaultStoreValues: () => ({
+        session: { userId: '' },
+      }),
+    }),
+  );
 
   server.setErrorHandler(server.errorHandler);
   server.setErrorHandler((error, req, res) => {
@@ -84,7 +92,9 @@ export const init = async (router, infra, config) => {
           const payload = schemaDefinition.source
             ? req[schemaDefinition.source]
             : {};
-          const session = authDefinition ? req.session : undefined;
+          const session = authDefinition
+            ? server.requestContext.get('session')
+            : undefined;
           const result = await bus.command(command, payload, session);
           const [code, data] = schema.output ? [200, result] : [204, null];
           res.code(code).send(data);
@@ -100,7 +110,7 @@ export const init = async (router, infra, config) => {
               token,
               definition: authDefinition,
             });
-            req.session = session;
+            server.requestContext.set('session', session);
           },
         ]);
       }
@@ -118,12 +128,12 @@ export const init = async (router, infra, config) => {
         const token = server.getAuthToken(req);
         /** @type Session */
         const session = await bus.command('auth.verify', { token });
-        req.session = session;
+        server.requestContext.set('session', session);
       },
     ]),
     handler: async () => 'WS',
-    wsHandler: (connection, req) => {
-      const { userId } = req.session;
+    wsHandler: (connection) => {
+      const { userId } = server.requestContext.get('session');
       connection.socket.on('open', () => {
         ws.add(userId, connection.socket);
       });
