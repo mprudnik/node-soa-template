@@ -18,7 +18,7 @@ const deposit = async (infra, { data: { accountId, amount } }) => {
       typeExternal: 'deposit',
     },
   });
-  bus.publish('account.deposit', { data: { accountId, amount } });
+  bus.publish('account.deposit', { meta: null, data: { accountId, amount } });
 };
 
 /** @type Commands['withdraw'] */
@@ -42,7 +42,7 @@ const withdraw = async (infra, { data: { accountId, amount } }) => {
       },
     });
   });
-  bus.publish('account.withdraw', { data: { accountId, amount } });
+  bus.publish('account.withdraw', { meta: null, data: { accountId, amount } });
 };
 
 /** @type Commands['transfer'] */
@@ -72,6 +72,7 @@ const transfer = async (infra, { data: { fromId, toId, amount } }) => {
     });
   });
   bus.publish('account.transfer', {
+    meta: null,
     data: {
       fromId,
       toId,
@@ -88,6 +89,7 @@ const transfer = async (infra, { data: { fromId, toId, amount } }) => {
     },
   });
   bus.publish('account.transfer', {
+    meta: null,
     data: {
       fromId,
       toId,
@@ -106,6 +108,7 @@ const transfer = async (infra, { data: { fromId, toId, amount } }) => {
     },
   });
   bus.publish('account.transfer', {
+    meta: null,
     data: {
       fromId,
       toId,
