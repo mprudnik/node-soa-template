@@ -116,10 +116,12 @@ const transfer = async (infra, { data: { fromId, toId, amount } }) => {
 };
 
 /** @type Commands['getBalance'] */
-const getBalance = (infra, { data: { accountId } }) => getAccountBalance(infra.db, accountId);
+const getBalance = (infra, { data: { accountId } }) =>
+  getAccountBalance(infra.db, accountId);
 
 /** @type Commands['getTransactions'] */
-const getTransactions = (infra, { data: { accountId } }) => infra.db.accountTransaction.findMany({ where: { accountId } });
+const getTransactions = (infra, { data: { accountId } }) =>
+  infra.db.accountTransaction.findMany({ where: { accountId } });
 
 /** @type getAccountBalance */
 const getAccountBalance = async (db, accountId) => {

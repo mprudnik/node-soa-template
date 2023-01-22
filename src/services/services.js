@@ -40,4 +40,3 @@ export const init = async (infra) => {
     if (eventHandlers) initEventHandlers(infra, eventHandlers);
   }
 };
-

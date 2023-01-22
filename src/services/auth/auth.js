@@ -1,65 +1,86 @@
-/** @typedef {import('./auth').init} init */
+/** @typedef {import('./types').AuthCommands} Commands */
 import * as crypto from '../../lib/crypto.js';
 import { AppError } from '../../lib/error.js';
 
-/** @type init  */
-export const init = ({ db, bus }) => ({
-  signUp: async ({ email, password, ...rest }) => {
-    const exists = await db.user.findUnique({ where: { email } });
-    if (exists) throw new AppError('Already exists');
+/** @type Commands['signUp']  */
+const signUp = async (infra, { data: { email, password, ...rest } }) => {
+  const { db, bus } = infra;
 
-    const passwordHash = await crypto.hash(password);
+  const exists = await db.user.findUnique({ where: { email } });
+  if (exists) throw new AppError('Already exists');
 
-    const { id: userId } = await db.user.create({
-      data: { email, passwordHash, ...rest },
-    });
+  const passwordHash = await crypto.hash(password);
 
-    const token = crypto.random();
-    await db.session.create({ data: { userId, token } });
+  const { id: userId } = await db.user.create({
+    data: { email, passwordHash, ...rest },
+  });
 
-    bus.publish('auth.signUp', { data: { email } });
+  const token = crypto.random();
+  await db.session.create({ data: { userId, token } });
 
-    return { userId, token };
-  },
+  bus.publish('auth.signUp', { data: { email } });
 
-  signIn: async ({ email, password }) => {
-    const user = await db.user.findUnique({ where: { email } });
-    if (!user) throw new AppError('Invalid credentials');
+  return { userId, token };
+};
 
-    const valid = await crypto.compare(password, user.passwordHash);
-    if (!valid) throw new AppError('Invalid credentials');
+/** @type Commands['signIn']  */
+const signIn = async (infra, { data: { email, password } }) => {
+  const { db } = infra;
 
-    const { id: userId } = user;
-    const token = crypto.random();
-    await db.session.create({ data: { userId, token } });
+  const user = await db.user.findUnique({ where: { email } });
+  if (!user) throw new AppError('Invalid credentials');
 
-    return { userId, token };
-  },
+  const valid = await crypto.compare(password, user.passwordHash);
+  if (!valid) throw new AppError('Invalid credentials');
 
-  signOut: async ({ token }) => {
-    const exists = await db.session
-      .delete({ where: { token } })
-      .catch(() => false);
-    if (!exists) throw new AppError('Not found');
-  },
+  const { id: userId } = user;
+  const token = crypto.random();
+  await db.session.create({ data: { userId, token } });
 
-  refresh: async ({ token }) => {
-    const session = await db.session.findUnique({ where: { token } });
-    if (!session) throw new AppError('Not found');
+  return { userId, token };
+};
 
-    const newToken = crypto.random();
-    await db.session.update({
-      where: { id: session.id },
-      data: { token: newToken },
-    });
+/** @type Commands['signOut']  */
+const signOut = async (infra, { data: { token } }) => {
+  const { db } = infra;
 
-    return { token: newToken };
-  },
+  const exists = await db.session
+    .delete({ where: { token } })
+    .catch(() => false);
+  if (!exists) throw new AppError('Not found');
+};
 
-  verify: async ({ token }) => {
-    const session = await db.session.findUnique({ where: { token } });
-    if (!session) throw new AppError('Not found');
+/** @type Commands['refresh']  */
+const refresh = async (infra, { data: { token } }) => {
+  const { db } = infra;
 
-    return { userId: session.userId };
-  },
-});
+  const session = await db.session.findUnique({ where: { token } });
+  if (!session) throw new AppError('Not found');
+
+  const newToken = crypto.random();
+  await db.session.update({
+    where: { id: session.id },
+    data: { token: newToken },
+  });
+
+  return { token: newToken };
+};
+
+/** @type Commands['verify']  */
+const verify = async (infra, { data: { token } }) => {
+  const { db } = infra;
+
+  const session = await db.session.findUnique({ where: { token } });
+  if (!session) throw new AppError('Not found');
+
+  return { userId: session.userId };
+};
+
+/** @type Commands */
+export const commands = {
+  signUp,
+  signIn,
+  signOut,
+  refresh,
+  verify,
+};
