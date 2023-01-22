@@ -2,17 +2,15 @@
 /** @typedef {import('./types').InfraConfig} Config */
 import { init as initLogger } from './logger.js';
 import { init as initDB, teardown as teardownDB } from './db.js';
-import { init as initWS } from './ws.js';
-import { Bus } from './bus.js';
+import { init as initBus } from './bus.js';
 
 /** @type function(Config): Promise<Infra> */
 export const init = async (config) => {
-  const bus = new Bus();
+  const bus = initBus();
   const logger = initLogger(config.logger);
   const db = await initDB({ logger }, config.db);
-  const ws = initWS();
 
-  return { bus, logger, db, ws };
+  return { bus, logger, db };
 };
 
 /** @type function(Infra): Promise<void> */

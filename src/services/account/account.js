@@ -16,7 +16,7 @@ export const init = ({ db, bus }) => ({
         typeExternal: 'deposit',
       },
     });
-    bus.publish('account.deposit', { accountId, amount });
+    bus.publish('account.deposit', { data: { accountId, amount } });
   },
   withdraw: async ({ accountId, amount }) => {
     const ledger = await db.ledger.findUnique({ where: { name: 'HouseCash' } });
@@ -36,7 +36,7 @@ export const init = ({ db, bus }) => ({
         },
       });
     });
-    bus.publish('account.withdraw', { accountId, amount });
+    bus.publish('account.withdraw', { data: { accountId, amount } });
   },
   transfer: async ({ fromId, toId, amount }) => {
     const reserveLedger = await db.ledger.findUnique({
@@ -62,10 +62,12 @@ export const init = ({ db, bus }) => ({
       });
     });
     bus.publish('account.transfer', {
-      fromId,
-      toId,
-      amount,
-      state: 'initial',
+      data: {
+        fromId,
+        toId,
+        amount,
+        state: 'initial',
+      },
     });
 
     await db.ledgerTransaction.create({
@@ -76,10 +78,12 @@ export const init = ({ db, bus }) => ({
       },
     });
     bus.publish('account.transfer', {
-      fromId,
-      toId,
-      amount,
-      state: 'partial',
+      data: {
+        fromId,
+        toId,
+        amount,
+        state: 'partial',
+      },
     });
 
     await db.accountTransaction.create({
@@ -92,10 +96,12 @@ export const init = ({ db, bus }) => ({
       },
     });
     bus.publish('account.transfer', {
-      fromId,
-      toId,
-      amount,
-      state: 'completed',
+      data: {
+        fromId,
+        toId,
+        amount,
+        state: 'completed',
+      },
     });
   },
   getBalance: ({ accountId }) => getBalance(db, accountId),

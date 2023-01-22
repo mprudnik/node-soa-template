@@ -1,35 +1,33 @@
-import type { FastifyInstance,  FastifyServerOptions } from 'fastify';
-import type { FastifyCorsOptions } from '@fastify/cors'
-import type { HttpRouter } from '../api/types';
+import type { FastifyInstance, RouteOptions } from "fastify";
 import type { Infra } from '../infra/types';
-import type { Session } from '../types';
+import type { FastifyCorsOptions } from '@fastify/cors';
+import type { FastifyAuthPluginOptions } from '@fastify/auth';
+import type { SwaggerPluginOptions } from './plugins/swagger/types';
 
-export type ServerConfig = {
+export interface HTTPRoute extends Pick<RouteOptions, 'method' | 'url'> {
+  auth?: unknown;
+  input?: {
+    source: 'body' | 'query';
+    required?: string[];
+    properties: Record<string, unknown>;
+  };
+  output?: unknown;
+  command: { service: string; method: string; };
+}
+
+export type Server = FastifyInstance;
+export type API = { http?: Record<string, HTTPRoute[]>; ws?: any };
+
+export interface ServerConfig {
   host: string;
   port: number;
-  instance: FastifyServerOptions;
+  healthCheckUrl: string;
+  env: string;
   cors: FastifyCorsOptions;
-  swagger: {
-    title: string;
-    version: string;
-    routePrefix: string;
-    serverUrl: string;
-  }
-};
-
-export function init(
-  router: HttpRouter,
-  infra: Infra,
-  config: ServerConfig
-): Promise<FastifyInstance>;
-
-declare module 'fastify' {
-  interface FastifyInstance {
-    getAuthToken: (req: FastifyRequest) => string;
-  }
-
-  interface FastifyRequest {
-    session: Session;
-  }
+  auth: FastifyAuthPluginOptions;
+  swagger: SwaggerPluginOptions;
 }
+
+export function init(infra: Infra, api: API, config: ServerConfig): Promise<Server>;
+export function teardown(infra: Infra, server: Server): Promise<void>;
 

@@ -1,8 +1,8 @@
-/** @typedef {import('./types').Bus} IBus */
+/** @typedef {import('./types').Bus} BusInterface */
 import { EventEmitter } from 'node:events';
 
-/** @implements IBus */
-export class Bus {
+/** @implements {BusInterface} */
+class Bus {
   #ee;
   #services;
 
@@ -11,22 +11,33 @@ export class Bus {
     this.#services = new Map();
   }
 
-  command(name, payload, session) {
-    const [serviceName, methodName] = name.split('.');
+  /** @type BusInterface['command'] */
+  command({ service: serviceName, method }, payload) {
     const service = this.#services.get(serviceName);
-    return service[methodName](payload, session);
+    return service[method](payload);
   }
 
+  /** @type BusInterface['registerService'] */
   registerService(name, service) {
     this.#services.set(name, service);
   }
 
+  /** @type BusInterface['subscribe'] */
   subscribe(event, handler) {
     this.#ee.on(event, handler);
     return true;
   }
 
-  publish(event, data) {
-    return this.#ee.emit(event, data);
+  /** @type BusInterface['unsubscribe'] */
+  unsubscribe(event, handler) {
+    this.#ee.removeListener(event, handler);
+    return true;
+  }
+
+  /** @type BusInterface['publish'] */
+  publish(event, payload) {
+    return this.#ee.emit(event, payload);
   }
 }
+
+export const init = () => new Bus();
