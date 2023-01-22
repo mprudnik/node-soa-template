@@ -1,5 +1,5 @@
 /** @typedef {import('./notification')} Notification */
-import { AppError } from '../../lib/error';
+import { AppError } from '../../lib/error.js';
 
 /** @type Notification['init'] */
 export const init = ({ bus, db }) => {
