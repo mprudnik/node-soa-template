@@ -1,14 +1,14 @@
 import { Infra } from '../infra/types';
 
-type Payload<M, D> = { meta?: M, data: D };
+type Payload<Meta, Data> = { meta: Meta, data: Data };
 
-export type Command<M = unknown, D = unknown, R = unknown> = (
+export type Command<Meta = unknown, Data = unknown, Returns = unknown> = (
   infra: Infra,
-  payload: Payload<M, D>,
-) => Promise<R>;
-export type EventHandler<M = unknown, D = unknown> = (
+  payload: Payload<Meta, Data>,
+) => Promise<Returns>;
+export type EventHandler<Meta = unknown, Data = unknown> = (
   infra: Infra,
-  payload: Payload<M, D>,
+  payload: Payload<Meta, Data>,
 ) => Promise<void>
 
 export type Service = {

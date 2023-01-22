@@ -5,7 +5,6 @@ const initialisedUsers = new Map();
 
 /** @type EventHandlers['ws.connection.open'] */
 const wsConnectionOpen = async (_i, { meta, data }) => {
-  if (!meta) throw new Error('Missing meta');
   const { serverId, wsId } = meta;
   const { userId } = data;
   initialisedUsers.set(userId, { serverId, wsId });

@@ -10,10 +10,10 @@ export type WSConnectionOpen = EventHandler<
   { userId: UserModel['id'] }
 >;
 
-export type WSConnectionClose = EventHandler<never, { userId: UserModel['id'] }>;
+export type WSConnectionClose = EventHandler<null, { userId: UserModel['id'] }>;
 
 export type AccountTransfer = EventHandler<
-  {},
+  null,
   { 
     fromId: AccountModel['id'];
     toId: AccountModel['id'];

@@ -8,17 +8,17 @@ import type {
 
 interface AccountCommands {
   deposit: Command<
-    {},
+    null,
     { accountId: AccountModel['id']; amount: AccountTransactionModel['amount']; },
     void
   >,
   withdraw: Command<
-    {},
+    null,
     { accountId: AccountModel['id']; amount: AccountTransactionModel['amount']; },
     void
   >,
   transfer: Command<
-    {},
+    null,
     {
       fromId: AccountModel['id'];
       toId: AccountModel['id'];
@@ -27,12 +27,12 @@ interface AccountCommands {
     void
   >,
   getBalance: Command<
-    {},
+    null,
     { accountId: AccountModel['id'] },
     number
   >,
   getTransactions: Command<
-    {},
+    null,
     { accountId: AccountModel['id'] },
     AccountTransactionModel[]
   >,
