@@ -5,4 +5,4 @@ node_modules
 *.done
 .DS_Store
 .env
-prisma/json-schema.json
+prisma/json-schema.js

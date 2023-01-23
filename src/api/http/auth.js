@@ -1,5 +1,12 @@
 /** @typedef {import('../types').HTTPRoute} HttpRoute */
 import * as schemaUtils from '../../lib/schema.js';
+import schema from '../../../prisma/json-schema.js';
+
+const signUpSchema = schemaUtils.selectProperties(schema.user, [
+  'email',
+  'firstName',
+  'lastName',
+]);
 
 /** @type HttpRoute */
 const signUp = {
@@ -7,13 +14,8 @@ const signUp = {
   url: '/sign-up',
   input: {
     source: 'body',
-    required: ['email', 'password', 'firstName', 'lastName'],
-    properties: {
-      email: { type: 'string' },
-      password: { type: 'string' },
-      firstName: { type: 'string' },
-      lastName: { type: 'string' },
-    },
+    required: [...signUpSchema.required, 'password'],
+    properties: { ...signUpSchema.properties, password: { type: 'string' } },
   },
   output: schemaUtils.toObject({
     required: ['userId', 'token'],
