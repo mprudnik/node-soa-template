@@ -3,6 +3,14 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["extendedWhereUnique"]
+}
+
+generator jsonSchema {
+  provider                 = "prisma-json-schema-generator"
+  includeRequiredFields    = "true"
+  keepRelationScalarFields = "true"
+  output                   = "./"
 }
 
 datasource db {
