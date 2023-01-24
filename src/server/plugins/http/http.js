@@ -27,9 +27,18 @@ const http = async (server, options) => {
         handler: async (req, res) => {
           const payload = input ? req[input.source] : {};
           const { session } = req;
-          const result = await executeCommand(command, payload, { session });
+          const [error, result] = await executeCommand(command, payload, {
+            session,
+          });
+          if (error) {
+            const [code, message, level, stack] = error.expected
+              ? [400, error.message, 'warn', undefined]
+              : [500, 'Internal server error', 'error', error?.stack];
+            res.log[level]({ stack }, `${service}${url}: ${error?.message}`);
+            return res.code(code).send({ message });
+          }
           const [code, data] = output ? [200, result] : [204, null];
-          res.code(code).send(data);
+          return res.code(code).send(data);
         },
       };
 
