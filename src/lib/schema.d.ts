@@ -17,13 +17,13 @@ type DBSortAndPagination = {
 export function paginate(item: SchemaItem): any;
 export function toObject(item: SchemaItem & { nullable?: boolean }): any;
 export function toArray(item: SchemaItem): any;
-export function selectProperties<T extends SchemaItem>(
+export function selectProperties<T extends SchemaItem, Key extends keyof T['properties'] & string>(
   entity: T,
-  properties: Array<keyof T['properties']>,
+  properties: Key[],
 ): Required<SchemaItem>;
-export function dropProperties<T extends SchemaItem>(
+export function dropProperties<T extends SchemaItem, Key extends keyof T['properties'] & string>(
   entity: T,
-  properties: Array<keyof T['properties']>,
+  properties: Key[],
 ): Required<SchemaItem>;
 export const paginationProperties: { page: any, limit: any };
 export const sortProperties: { sortBy: any, sortOrder: any };
