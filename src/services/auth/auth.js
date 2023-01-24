@@ -17,7 +17,7 @@ export const init = ({ db, bus }) => ({
     const token = crypto.random();
     await db.session.create({ data: { userId, token } });
 
-    bus.publish('auth.signUp', { email });
+    bus.publish('auth.signUp', { data: { email } });
 
     return { userId, token };
   },
