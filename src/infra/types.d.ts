@@ -1,7 +1,7 @@
 import type { PrismaClient, Prisma } from '@prisma/client';
 import { BaseLogger } from 'pino';
 
-type Event = { meta?: any; data: any };
+type Event = { meta: any; data: any };
 type EventHandler = (event: Event) => any;
 
 export type Logger = Pick<BaseLogger, 'silent' | 'trace' | 'level' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'>;
