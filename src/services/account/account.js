@@ -1,13 +1,13 @@
 /** @typedef {import('./types').AccountCommands} Commands */
 /** @typedef {import('./types').getAccountBalance} getAccountBalance */
-import { AppError } from '../../lib/error.js';
+import { ServiceError } from '../error.js';
 
 /** @type Commands['deposit'] */
 const deposit = async (infra, { data: { accountId, amount } }) => {
   const { db, bus } = infra;
 
   const ledger = await db.ledger.findUnique({ where: { name: 'HouseCash' } });
-  if (!ledger) throw new AppError('Transaction failed');
+  if (!ledger) throw new ServiceError('Transaction failed');
 
   await db.accountTransaction.create({
     data: {
@@ -26,11 +26,11 @@ const withdraw = async (infra, { data: { accountId, amount } }) => {
   const { db, bus } = infra;
 
   const ledger = await db.ledger.findUnique({ where: { name: 'HouseCash' } });
-  if (!ledger) throw new AppError('Transaction failed');
+  if (!ledger) throw new ServiceError('Transaction failed');
 
   await db.$transaction(async (tx) => {
     const balance = await getAccountBalance(tx, accountId);
-    if (amount > balance) throw new AppError('Insufficient funds');
+    if (amount > balance) throw new ServiceError('Insufficient funds');
 
     await tx.accountTransaction.create({
       data: {
@@ -55,11 +55,12 @@ const transfer = async (infra, { data: { fromId, toId, amount } }) => {
   const cashLedger = await db.ledger.findUnique({
     where: { name: 'HouseCash' },
   });
-  if (!reserveLedger || !cashLedger) throw new AppError('Transaction failed');
+  if (!reserveLedger || !cashLedger)
+    throw new ServiceError('Transaction failed');
 
   await db.$transaction(async (tx) => {
     const balance = await getAccountBalance(tx, fromId);
-    if (amount > balance) throw new AppError('Insufficient funds');
+    if (amount > balance) throw new ServiceError('Insufficient funds');
 
     await tx.accountTransaction.create({
       data: {
