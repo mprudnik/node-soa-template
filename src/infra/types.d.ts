@@ -6,8 +6,7 @@ export interface DefaultMeta {
   [key: string]: unknown;
 }
 export type Payload<Meta = object, Data = unknown> = { meta: Meta, data: Data };
-export type Event = Payload;
-type EventHandler = (event: Event) => any;
+export type EventHandler = (event: Payload<DefaultMeta>) => Promise<void>;
 export type CommandHandler = (payload: Payload<DefaultMeta>) => Promise<CommandResult>;
 export type ServiceError = { message: string; expected: boolean };
 export type CommandResult = [ServiceError | null, any];
@@ -19,7 +18,7 @@ export interface Bus {
   registerService(name: string, service: Record<string, CommandHandler>): void;
   unsubscribe(eventName: string, handler: EventHandler): boolean;
   subscribe(eventName: string, handler: EventHandler): boolean;
-  publish(eventName: string, event: Event): boolean;
+  publish(eventName: string, payload: Payload): boolean;
 }
 
 export type Infra = {

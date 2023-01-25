@@ -17,7 +17,7 @@ export const init = async (infra) => {
   for (const [name, service] of Object.entries(services)) {
     const { commands, eventHandlers } = service;
     if (commands) initCommands(infra, name, commands);
-    if (eventHandlers) initEventHandlers(infra, eventHandlers);
+    if (eventHandlers) initEventHandlers(infra, name, eventHandlers);
   }
 };
 
@@ -26,9 +26,9 @@ const initCommands = (infra, serviceName, commands) => {
   /** @type Service['commands'] */
   const initialized = {};
 
-  for (const [name, fn] of Object.entries(commands)) {
-    initialized[name] = wrapCommand(infra, fn, {
-      logPrefix: `${serviceName}/${name}`,
+  for (const [commandName, fn] of Object.entries(commands)) {
+    initialized[commandName] = wrapCommand(infra, fn, {
+      logPrefix: `${serviceName}/${commandName}`,
     });
   }
 
@@ -36,9 +36,12 @@ const initCommands = (infra, serviceName, commands) => {
 };
 
 /** @type ServiceFuncs['initEventHandlers'] */
-const initEventHandlers = (infra, handlers) => {
+const initEventHandlers = (infra, serviceName, handlers) => {
   for (const [eventName, handler] of Object.entries(handlers)) {
-    infra.bus.subscribe(eventName, handler.bind(null, infra));
+    const wrapped = wrapEventHandler(infra, handler, {
+      logPrefix: `${serviceName}/${eventName}`,
+    });
+    infra.bus.subscribe(eventName, wrapped);
   }
 };
 
@@ -49,7 +52,7 @@ const wrapCommand = (infra, func, options) => async (payload) => {
   const { operationId } = payload.meta;
   try {
     const wrappedInfra = wrapInfra(infra, operationId);
-    const result = func(wrappedInfra, payload);
+    const result = await func(wrappedInfra, payload);
     return [null, result];
   } catch (error) {
     const serviceError = processServiceError(error, logger, {
@@ -57,6 +60,22 @@ const wrapCommand = (infra, func, options) => async (payload) => {
       logPrefix,
     });
     return [serviceError, null];
+  }
+};
+
+/** @type ServiceFuncs['wrapEventHandler'] */
+const wrapEventHandler = (infra, func, options) => async (payload) => {
+  const { logger } = infra;
+  const { logPrefix } = options;
+  const { operationId } = payload.meta;
+  try {
+    const wrappedInfra = wrapInfra(infra, operationId);
+    await func(wrappedInfra, payload);
+  } catch (error) {
+    processServiceError(error, logger, {
+      operationId,
+      logPrefix,
+    });
   }
 };
 

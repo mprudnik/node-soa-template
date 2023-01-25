@@ -34,6 +34,7 @@ export function initCommands(
 
 export function initEventHandlers(
   infra: Infra,
+  serviceName: string,
   eventHandlers: Record<string, EventHandler>,
 ): void;
 
@@ -52,5 +53,11 @@ export function wrapCommand(
   command: Command,
   options: WrapOptions,
 ): (payload: Payload<DefaultMeta>) => Promise<CommandResult>;
+
+export function wrapEventHandler(
+  infra: Infra,
+  command: EventHandler,
+  options: WrapOptions,
+): (payload: Payload<DefaultMeta>) => Promise<void>;
 
 export function wrapInfra(infra: Infra, operationId: string): WrappedInfra;
