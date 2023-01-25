@@ -22,11 +22,14 @@ export const init = async (infra, api, options) => {
 
   await server.register(swagger, options.swagger);
   await server.register(customAuth, {
-    verifyToken: (token, definition) =>
-      bus.command(
+    verifyToken: async (token, definition) => {
+      const [error, result] = await bus.command(
         { service: 'auth', method: 'verify' },
-        { data: { token, definition } },
-      ),
+        { meta: { definition }, data: { token } },
+      );
+      if (error) return { valid: false };
+      return result;
+    },
   });
 
   if (api.http) {

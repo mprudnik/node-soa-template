@@ -48,7 +48,8 @@ const wrapCommand = (infra, func, options) => async (payload) => {
   const { logPrefix } = options;
   const { operationId } = payload.meta;
   try {
-    const result = func(infra, payload);
+    const wrappedInfra = wrapInfra(infra, operationId);
+    const result = func(wrappedInfra, payload);
     return [null, result];
   } catch (error) {
     const serviceError = processServiceError(error, logger, {
@@ -57,4 +58,22 @@ const wrapCommand = (infra, func, options) => async (payload) => {
     });
     return [serviceError, null];
   }
+};
+
+/** @type ServiceFuncs['wrapInfra'] */
+const wrapInfra = (infra, operationId) => {
+  const { bus, ...rest } = infra;
+  return {
+    ...rest,
+    bus: {
+      command: (commandName, payload) => {
+        const wrappedMeta = { ...payload.meta, operationId };
+        return bus.command(commandName, { ...payload, meta: wrappedMeta });
+      },
+      publish: (eventName, payload) => {
+        const wrappedMeta = { ...payload.meta, operationId };
+        return bus.publish(eventName, { ...payload, meta: wrappedMeta });
+      },
+    },
+  };
 };

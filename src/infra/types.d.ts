@@ -1,14 +1,22 @@
 import type { PrismaClient, Prisma } from '@prisma/client';
 import { BaseLogger } from 'pino';
 
-type Event = { meta: any; data: any };
+export interface DefaultMeta {
+  operationId: string;
+  [key: string]: unknown;
+}
+export type Payload<Meta = object, Data = unknown> = { meta: Meta, data: Data };
+export type Event = Payload;
 type EventHandler = (event: Event) => any;
+export type CommandHandler = (payload: Payload<DefaultMeta>) => Promise<CommandResult>;
+export type ServiceError = { message: string; expected: boolean };
+export type CommandResult = [ServiceError | null, any];
 
 export type Logger = Pick<BaseLogger, 'silent' | 'trace' | 'level' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'>;
 export type DB = PrismaClient;
 export interface Bus {
-  command(command: { service: string; method: string; }, payload: object): Promise<any>;
-  registerService(name: string, service: object): void;
+  command(command: { service: string; method: string; }, payload: Payload): Promise<CommandResult>;
+  registerService(name: string, service: Record<string, CommandHandler>): void;
   unsubscribe(eventName: string, handler: EventHandler): boolean;
   subscribe(eventName: string, handler: EventHandler): boolean;
   publish(eventName: string, event: Event): boolean;
