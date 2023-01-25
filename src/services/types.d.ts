@@ -1,8 +1,13 @@
 import { Infra } from '../infra/types';
 
-type Payload<Meta = unknown, Data = unknown> = { meta: Meta, data: Data };
+export interface DefaultMeta {
+  operationId: string;
+  [key: string]: unknown;
+}
 
-export type Command<Meta = unknown, Data = unknown, Returns = unknown> = (
+type Payload<Meta = DefaultMeta, Data = unknown> = { meta: Meta, data: Data };
+
+export type Command<Meta = DefaultMeta, Data = unknown, Returns = unknown> = (
   infra: Infra,
   payload: Payload<Meta, Data>,
 ) => Promise<Returns>;
@@ -32,13 +37,23 @@ interface ServiceError {
   message: string;
 }
 
-export type WrappedCommandResult = [ServiceError | null, any];
+export function processServiceError(
+  error: any,
+  logger: Infra['logger'], 
+  options: { operationId: string, logPrefix: string },
+): ServiceError;
+
+export type WrappedResult = [ServiceError | null, any];
+
+export interface WrapOptions {
+  logPrefix: string;
+}
+
 export function wrapCommand(
   infra: Infra,
   command: Command,
-): (payload: Payload) => Promise<WrappedCommandResult>;
-type AsyncFunc = (...args: any[]) => Promise<any>;
-export function handleServiceError(func: AsyncFunc): (...args: any[]) => Promise<WrappedCommandResult>;
+  options: WrapOptions,
+): (payload: Payload) => Promise<WrappedResult>;
 
 export function init(infra: Infra): Promise<void>;
 
