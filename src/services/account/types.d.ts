@@ -9,14 +9,20 @@ import type {
 interface AccountCommands {
   deposit: Command<
     null,
-    { accountId: AccountModel['id']; amount: AccountTransactionModel['amount']; },
+    {
+      accountId: AccountModel['id'];
+      amount: AccountTransactionModel['amount'];
+    },
     void
-  >,
+  >;
   withdraw: Command<
     null,
-    { accountId: AccountModel['id']; amount: AccountTransactionModel['amount']; },
+    {
+      accountId: AccountModel['id'];
+      amount: AccountTransactionModel['amount'];
+    },
     void
-  >,
+  >;
   transfer: Command<
     null,
     {
@@ -25,21 +31,16 @@ interface AccountCommands {
       amount: AccountTransactionModel['amount'];
     },
     void
-  >,
-  getBalance: Command<
-    null,
-    { accountId: AccountModel['id'] },
-    number
-  >,
+  >;
+  getBalance: Command<null, { accountId: AccountModel['id'] }, number>;
   getTransactions: Command<
     null,
     { accountId: AccountModel['id'] },
     AccountTransactionModel[]
-  >,
+  >;
 }
 
 export function getAccountBalance(
   db: Prisma.TransactionClient | PrismaClient,
   accountId: AccountModel['id'],
 ): Promise<number>;
-

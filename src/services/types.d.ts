@@ -1,6 +1,6 @@
 import { Infra } from '../infra/types';
 
-type Payload<Meta, Data> = { meta: Meta, data: Data };
+type Payload<Meta, Data> = { meta: Meta; data: Data };
 
 export type Command<Meta = unknown, Data = unknown, Returns = unknown> = (
   infra: Infra,
@@ -9,7 +9,7 @@ export type Command<Meta = unknown, Data = unknown, Returns = unknown> = (
 export type EventHandler<Meta = unknown, Data = unknown> = (
   infra: Infra,
   payload: Payload<Meta, Data>,
-) => Promise<void>
+) => Promise<void>;
 
 export type Service = {
   commands?: any;
@@ -28,4 +28,3 @@ export function initEventHandlers(
 ): void;
 
 export function init(infra: Infra): Promise<void>;
-

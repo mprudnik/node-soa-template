@@ -5,4 +5,3 @@ export interface Config {
   infra: InfraConfig;
   server: ServerConfig;
 }
-

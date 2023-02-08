@@ -2,7 +2,10 @@ import type { FastifyPluginAsync } from 'fastify';
 import type { FastifyAuthFunction } from '@fastify/auth';
 
 export interface AuthPluginOptions {
-  verifyToken: (token: string, definition: any) => Promise<{
+  verifyToken: (
+    token: string,
+    definition: any,
+  ) => Promise<{
     valid: boolean;
     access: boolean;
     message: string;
@@ -22,5 +25,3 @@ declare module 'fastify' {
     session: any;
   }
 }
-
-

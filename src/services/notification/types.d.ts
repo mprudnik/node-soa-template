@@ -6,7 +6,7 @@ import {
 } from '@prisma/client';
 
 export type WSConnectionOpen = EventHandler<
-  { serverId: string; wsId: string; },
+  { serverId: string; wsId: string },
   { userId: UserModel['id'] }
 >;
 
@@ -14,7 +14,7 @@ export type WSConnectionClose = EventHandler<null, { userId: UserModel['id'] }>;
 
 export type AccountTransfer = EventHandler<
   null,
-  { 
+  {
     fromId: AccountModel['id'];
     toId: AccountModel['id'];
     amount: AccountTransactionModel['amount'];
@@ -27,4 +27,3 @@ export interface NotificationEventHandlers {
   'ws.connection.close': WSConnectionClose;
   'account.transfer': AccountTransfer;
 }
-

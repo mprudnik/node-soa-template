@@ -12,16 +12,23 @@ interface AuthResult {
 interface AuthCommands {
   signUp: Command<
     null,
-    Pick<UserModel, 'email' | 'firstName' | 'lastName'> & { password: string }, 
+    Pick<UserModel, 'email' | 'firstName' | 'lastName'> & { password: string },
     AuthResult
   >;
   signIn: Command<
     null,
-    { email: UserModel['email'], password: string },
+    { email: UserModel['email']; password: string },
     AuthResult
   >;
   signOut: Command<null, Pick<SessionModel, 'token'>, void>;
-  refresh: Command<null, Pick<SessionModel, 'token'>, Pick<SessionModel, 'token'>>;
-  verify: Command<null, Pick<SessionModel, 'token'>, { userId: UserModel['id'] }>;
+  refresh: Command<
+    null,
+    Pick<SessionModel, 'token'>,
+    Pick<SessionModel, 'token'>
+  >;
+  verify: Command<
+    null,
+    Pick<SessionModel, 'token'>,
+    { userId: UserModel['id'] }
+  >;
 }
-

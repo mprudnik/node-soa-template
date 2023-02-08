@@ -1,13 +1,15 @@
 {
-  "extends": ["metarhia", "plugin:prettier/recommended"],
+  "extends": ["metarhia", "plugin:prettier/recommended", "plugin:@typescript-eslint/recommended"],
   "env": {
-    "browser": true,
     "es6": true,
     "node": true
   },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
   "rules": {
     "strict": "off",
-    "no-use-before-define": "off"
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-explicit-any": "off"
   },
   "parserOptions": {
     "sourceType": "module",

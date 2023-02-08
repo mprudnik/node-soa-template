@@ -1,3 +1,5 @@
-export class AppError extends Error { }
+export class AppError extends Error {}
 
-export function handleError(error: unknown): [number, string, 'warn' | 'error', string | undefined];
+export function handleError(
+  error: unknown,
+): [number, string, 'warn' | 'error', string | undefined];
