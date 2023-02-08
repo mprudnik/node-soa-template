@@ -1,8 +1,9 @@
 /** @typedef {import('./types').Bus} IBus */
 /** @typedef {import('./types').Command} ICommand */
 /** @typedef {import('./types').PubSub} IPubSub */
-/** @typedef {import('./types').CommandResponse} CommandResponse */
-/** @typedef {import('redis').RedisClientType} Redis */
+/** @typedef {import('./types').CallData} CallData */
+/** @typedef {import('./types').CallResponse} CallResponse */
+/** @typedef {import('./types').init} init */
 import { EventEmitter } from 'node:events';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
@@ -11,19 +12,18 @@ import { setTimeout } from 'node:timers/promises';
 class Bus {
   #ee;
   #localServices;
-  /** @type Redis */
-  #redisClient;
+  #redis;
   #calls;
 
   /** @type string */
   #serverId;
   /** @type boolean */
-  #terminating;
+  #terminating = false;
 
+  /** @type init */
   constructor({ redis }, { serverId }) {
     this.#serverId = serverId;
-    this.#terminating = false;
-    this.#redisClient = redis;
+    this.#redis = redis;
     this.#ee = new EventEmitter();
     this.#localServices = new Map();
     this.#calls = new Map();
@@ -32,11 +32,11 @@ class Bus {
   /** @type IBus['listen'] */
   async listen() {
     const subKey = `response:${this.#serverId}:*`;
-    this.#redisClient.pSubscribe(subKey, this.#handleResponse);
+    this.#redis.pSubscribe(subKey, this.#handleResponse);
 
     const services = this.#localServices.keys();
     for (const serviceName of services) {
-      while (!this.#terminating) await this.#listenRemoteCommands(serviceName);
+      while (!this.#terminating) await this.#listenRemoteCalls(serviceName);
     }
   }
 
@@ -44,7 +44,7 @@ class Bus {
   async teardown() {
     this.#terminating = true;
     await setTimeout(10000);
-    await this.#redisClient.unsubscribe();
+    await this.#redis.unsubscribe();
   }
 
   /** @type ICommand['call'] */
@@ -84,12 +84,15 @@ class Bus {
   async #remoteCall({ service: serviceName, method }, payload) {
     const callId = randomUUID();
     const streamKey = `${serviceName}:${method}:request`;
-    await this.#redisClient.xAdd(
-      streamKey,
-      '*',
-      { callId, serverId: this.#serverId, payload: JSON.stringify(payload) },
-      { TRIM: { strategy: 'MAXLEN', strategyModifier: '~', threshold: 10000 } },
-    );
+    /** @type CallData */
+    const data = {
+      serverId: this.#serverId,
+      callId,
+      payload: JSON.stringify(payload),
+    };
+    await this.#redis.xAdd(streamKey, '*', data, {
+      TRIM: { strategy: 'MAXLEN', strategyModifier: '~', threshold: 10000 },
+    });
     return new Promise((resolve, reject) => {
       this.#calls.set(callId, { resolve, reject });
     });
@@ -98,28 +101,36 @@ class Bus {
   /** @type {(message: string, channel: string) => void} */
   #handleResponse(message, channel) {
     const callId = channel.split(':').at(-1);
-    /** @type CommandResponse */
-    const result = JSON.parse(message);
     const promise = this.#calls.get(callId);
     if (!promise) return; // need to handle properly
-    promise.resolve(result);
+    /** @type CallResponse */
+    const response = JSON.parse(message);
+    promise.resolve(response);
   }
 
-  async #handleRemoteCommand(streamName, { serverId, callId, payload }) {
+  /** @type {(streamName: string, data: CallData) => Promise<void>} */
+  async #handleRemoteCall(
+    streamName,
+    { serverId, callId, payload: strPayload },
+  ) {
     const [service, method] = streamName.split(':');
+    const payload = JSON.parse(strPayload);
+
     const result = await this.#localCall({ service, method }, payload);
+
     const message = JSON.stringify(result);
-    this.#redisClient.publish(`response:${serverId}:${callId}`, message);
+    this.#redis.publish(`response:${serverId}:${callId}`, message);
   }
 
-  async #listenRemoteCommands(serviceName) {
+  /** @type {(serviceName: string) => Promise<void>} */
+  async #listenRemoteCalls(serviceName) {
     const service = this.#localServices.get(serviceName);
     const streams = [];
     for (const methodName of Object.keys(service)) {
       const key = `${serviceName}:${methodName}:request`;
       streams.push({ key, id: '>' });
     }
-    const events = await this.#redisClient.xReadGroup(
+    const events = await this.#redis.xReadGroup(
       serviceName,
       this.#serverId,
       streams,
@@ -128,8 +139,10 @@ class Bus {
     if (!events?.length) return;
     const { name, messages } = events[0];
     const { message } = messages[0];
-    this.#handleRemoteCommand(name, message);
+    const payload = /** @type CallData */ (message);
+    this.#handleRemoteCall(name, payload);
   }
 }
 
-export const init = () => new Bus();
+/** @type init */
+export const init = (deps, options) => new Bus(deps, options);
