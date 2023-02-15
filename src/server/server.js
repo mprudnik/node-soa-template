@@ -22,11 +22,18 @@ export const init = async (infra, api, options) => {
 
   await server.register(swagger, options.swagger);
   await server.register(customAuth, {
-    verifyToken: (token, definition) =>
-      bus.command(
+    verifyToken: async (token, definition) => {
+      const [error, result] = await bus.call(
         { service: 'auth', method: 'verify' },
-        { data: { token, definition } },
-      ),
+        { meta: {}, data: { token, definition } },
+      );
+      if (error) {
+        if (error.expected)
+          return { valid: false, access: false, message: error.message };
+      }
+
+      return result;
+    },
   });
 
   if (api.http) {
@@ -34,7 +41,7 @@ export const init = async (infra, api, options) => {
       api: api.http,
       prefix: '/api',
       executeCommand: (command, payload, meta) =>
-        bus.command(command, { meta, data: payload }),
+        bus.call(command, { meta, data: payload }),
     });
   }
 

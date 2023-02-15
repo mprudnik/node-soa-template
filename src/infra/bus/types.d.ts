@@ -24,8 +24,9 @@ export interface Command {
 }
 
 export interface PubSub {
-  subscribe(eventName: string, handler: EventHandler): boolean;
   publish(eventName: string, payload: Payload): boolean;
+  subscribe(eventName: string, handler: EventHandler): boolean;
+  unsubscribe(eventName: string, handler: EventHandler): boolean;
 }
 
 export interface Bus extends Command, PubSub {

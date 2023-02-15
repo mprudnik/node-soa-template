@@ -44,6 +44,7 @@
     "eslint": "^8.22.0",
     "eslint-config-metarhia": "^8.1.0",
     "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^3.5.3",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
     "metatests": "^0.8.2",

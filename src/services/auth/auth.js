@@ -18,7 +18,7 @@ const signUp = async (infra, { data: { email, password, ...rest } }) => {
   const token = crypto.random();
   await db.session.create({ data: { userId, token } });
 
-  bus.publish('auth.signUp', { meta: null, data: { email } });
+  bus.publish('auth.signUp', { meta: {}, data: { email } });
 
   return { userId, token };
 };

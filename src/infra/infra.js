@@ -7,7 +7,7 @@ import { init as initBus } from './bus/bus.js';
 /** @type Infra['init'] */
 export const init = async (config) => {
   const logger = initLogger(config.logger);
-  const redis = initRedis(config.redis);
+  const redis = await initRedis({ logger }, config.redis);
   const db = await initDB({ logger }, config.db);
   const bus = initBus({ logger, redis }, config.bus);
 

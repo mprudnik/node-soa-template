@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 /** @type {(name: string) => string} */
 export const requiredEnv = (name) => {
   const env = process.env[name];
@@ -8,3 +10,4 @@ export const requiredEnv = (name) => {
 /** @type {"development" | "production" | "test"} */
 // @ts-ignore
 export const nodeEnv = process.env.NODE_ENV ?? 'development';
+export const serverId = randomUUID();

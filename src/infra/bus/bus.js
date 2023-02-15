@@ -59,15 +59,21 @@ class Bus {
     this.#localServices.set(name, service);
   }
 
+  /** @type IPubSub['publish'] */
+  publish(event, payload) {
+    return this.#ee.emit(event, payload);
+  }
+
   /** @type IPubSub['subscribe'] */
   subscribe(event, handler) {
     this.#ee.on(event, handler);
     return true;
   }
 
-  /** @type IPubSub['publish'] */
-  publish(event, payload) {
-    return this.#ee.emit(event, payload);
+  /** @type IPubSub['unsubscribe'] */
+  unsubscribe(event, handler) {
+    this.#ee.removeListener(event, handler);
+    return true;
   }
 
   /** @type ICommand['call'] */

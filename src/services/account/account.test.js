@@ -14,7 +14,12 @@ describe('account', () => {
   const account2 = { id: 'account2', initialBalance: 1000 };
 
   before(async () => {
-    infra = await initInfra({ logger: { env: 'test' }, db: {} });
+    infra = await initInfra({
+      logger: { env: 'test' },
+      db: {},
+      bus: { serverId: '' },
+      redis: {},
+    });
     const { db } = infra;
 
     const user = await db.user.create({

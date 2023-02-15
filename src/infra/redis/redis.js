@@ -1,5 +1,5 @@
-/** @typedef {import('./redis').init} init */
-/** @typedef {import('./redis').teardown} teardown */
+/** @typedef {import('./types').init} init */
+/** @typedef {import('./types').teardown} teardown */
 import * as redis from 'redis';
 
 /** @type init */
@@ -9,6 +9,7 @@ export const init = async ({ logger }, { url }) => {
   await client.connect();
   logger.info('Redis connected');
 
+  // @ts-ignore
   return client;
 };
 
