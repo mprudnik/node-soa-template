@@ -2,7 +2,7 @@
 import { init as initLogger } from './logger/logger.js';
 import { init as initDB, teardown as teardownDB } from './db/db.js';
 import { init as initRedis, teardown as teardownRedis } from './redis/redis.js';
-import { init as initBus } from './bus/bus.js';
+import { init as initBus, teardown as teardownBus } from './bus/bus.js';
 
 /** @type Infra['init'] */
 export const init = async (config) => {
@@ -15,7 +15,8 @@ export const init = async (config) => {
 };
 
 /** @type Infra['teardown'] */
-export const teardown = async ({ db, logger, redis }) => {
+export const teardown = async ({ db, logger, redis, bus }) => {
+  await teardownBus({ bus, logger });
   await teardownRedis({ redis, logger });
   await teardownDB({ db, logger });
 };

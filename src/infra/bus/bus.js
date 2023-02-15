@@ -1,4 +1,5 @@
 /** @typedef {import('./types').Init} Init */
+/** @typedef {import('./types').Teardown} Teardown */
 
 import { LocalBus } from './local.js';
 import { DistributedBus } from './distributed.js';
@@ -10,4 +11,10 @@ export const init = (deps, options) => {
       ? new DistributedBus(deps, options)
       : new LocalBus(deps, options);
   return bus;
+};
+
+/** @type Teardown */
+export const teardown = async (deps) => {
+  const { bus } = deps;
+  await bus.teardown();
 };

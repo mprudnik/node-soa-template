@@ -51,3 +51,5 @@ export type Init<Options = BusOptions> = (
 ) => Bus;
 export type InitLocal = Init<LocalBusOptions>;
 export type InitDistributed = Init<DistributedBusOptions>;
+
+export type Teardown = (deps: { bus: Bus; logger: Logger }) => Promise<void>;
