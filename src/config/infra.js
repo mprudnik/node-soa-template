@@ -6,5 +6,5 @@ export default {
   logger: { env: nodeEnv },
   db: { errorFormat: 'minimal' },
   redis: {},
-  bus: { serverId },
+  bus: { type: 'distributed', serverId },
 };

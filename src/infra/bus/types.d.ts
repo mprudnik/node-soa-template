@@ -24,7 +24,7 @@ export interface Command {
 }
 
 export interface PubSub {
-  publish(eventName: string, payload: Payload): boolean;
+  publish(eventName: string, payload: Payload): Promise<boolean>;
   subscribe(eventName: string, handler: EventHandler): boolean;
   unsubscribe(eventName: string, handler: EventHandler): boolean;
 }
@@ -34,11 +34,20 @@ export interface Bus extends Command, PubSub {
   teardown(): Promise<void>;
 }
 
-export interface BusOptions {
+export interface LocalBusOptions {
+  type: 'local';
+}
+
+export interface DistributedBusOptions {
+  type: 'distributed';
   serverId: string;
 }
 
-export function init(
+export type BusOptions = LocalBusOptions | DistributedBusOptions;
+
+export type Init<Options = BusOptions> = (
   deps: { redis: Redis; logger: Logger },
-  options: BusOptions,
-): Bus;
+  options: Options,
+) => Bus;
+export type InitLocal = Init<LocalBusOptions>;
+export type InitDistributed = Init<DistributedBusOptions>;

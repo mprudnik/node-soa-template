@@ -17,7 +17,7 @@ describe('account', () => {
     infra = await initInfra({
       logger: { env: 'test' },
       db: {},
-      bus: { serverId: '' },
+      bus: { type: 'local' },
       redis: {},
     });
     const { db } = infra;
