@@ -14,12 +14,14 @@ const services = {
 };
 
 /** @type initCommands */
-const initCommands = (infra, serviceName, commands) => {
+const initCommands = async (infra, serviceName, commands) => {
   /** @type Service['commands'] */
   const initialized = {};
 
-  for (const [name, fn] of Object.entries(commands)) {
-    initialized[name] = fn.bind(null, infra);
+  for (const [name, command] of Object.entries(commands)) {
+    const { handler, ...schema } = command;
+    initialized[name] = handler.bind(null, infra);
+    await infra.bus.setSchema(serviceName, name, schema);
   }
 
   infra.bus.registerService(serviceName, initialized);
@@ -36,7 +38,7 @@ const initEventHandlers = (infra, handlers) => {
 export const init = async (infra) => {
   for (const [name, service] of Object.entries(services)) {
     const { commands, eventHandlers } = service;
-    if (commands) initCommands(infra, name, commands);
+    if (commands) await initCommands(infra, name, commands);
     if (eventHandlers) initEventHandlers(infra, eventHandlers);
   }
 };
