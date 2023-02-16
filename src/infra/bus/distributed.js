@@ -21,6 +21,7 @@ export class DistributedBus {
   #serverId;
   /** @type boolean */
   #terminating = false;
+  #schemasKey = 'internal:schemas';
 
   /** @type Init */
   constructor({ redis }, { serverId }) {
@@ -48,6 +49,22 @@ export class DistributedBus {
   async teardown() {
     this.#terminating = true;
     await setTimeout(10000);
+  }
+
+  /** @type IBus['getSchema'] */
+  async getSchema(service, method) {
+    const key = `${service}:${method}`;
+    const strSchema = await this.#redis.hGet(this.#schemasKey, key);
+    if (!strSchema) return undefined;
+    const schema = JSON.parse(strSchema);
+    return schema;
+  }
+
+  /** @type IBus['setSchema'] */
+  async setSchema(service, method, schema) {
+    const key = `${service}:${method}`;
+    const strSchema = JSON.stringify(schema);
+    await this.#redis.hSet(this.#schemasKey, key, strSchema);
   }
 
   /** @type ICommand['registerService'] */
