@@ -2,7 +2,13 @@
 /** @typedef {import('./types').generateSchema} generateSchema */
 
 /** @type generateSchema */
-export const generateSchema = ({ service, input, output, auth }) => {
+export const generateSchema = ({
+  service,
+  inputSource,
+  input,
+  output,
+  auth,
+}) => {
   /** @type any */
   const routeSchema = {
     tags: [service.toUpperCase()],
@@ -25,7 +31,7 @@ export const generateSchema = ({ service, input, output, auth }) => {
   if (auth) routeSchema.security = [{ token: [] }];
 
   if (input) {
-    routeSchema[input.source] = {
+    routeSchema[inputSource] = {
       type: 'object',
       additionalProperties: false,
       required: input.required ?? [],

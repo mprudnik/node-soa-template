@@ -1,17 +1,11 @@
 import type { FastifyInstance, RouteOptions } from 'fastify';
-import type { Infra } from '../infra/types';
 import type { FastifyCorsOptions } from '@fastify/cors';
 import type { FastifyAuthPluginOptions } from '@fastify/auth';
 import type { SwaggerPluginOptions } from './plugins/swagger/types';
+import type { Infra } from '../infra/types';
 
 export interface HTTPRoute extends Pick<RouteOptions, 'method' | 'url'> {
-  auth?: unknown;
-  input?: {
-    source: 'body' | 'query';
-    required?: string[];
-    properties: Record<string, unknown>;
-  };
-  output?: unknown;
+  inputSource: 'body' | 'query';
   command: { service: string; method: string };
 }
 
