@@ -4,13 +4,13 @@
 /** @typedef {import('./types').init} init */
 import * as notification from './notification/notification.js';
 import * as auth from './auth/auth.js';
-// import * as account from './account/account.js';
+import * as account from './account/account.js';
 
 /** @type {Record<string, Service>} */
 const services = {
   auth,
   notification,
-//  account,
+  account,
 };
 
 /** @type initCommands */

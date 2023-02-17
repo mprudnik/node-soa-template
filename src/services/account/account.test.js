@@ -77,17 +77,17 @@ describe('account', () => {
 
   it('deposits', async () => {
     const amount = 50;
-    await account.commands.deposit(infra, {
+    await account.commands.deposit.handler(infra, {
       meta: null,
       data: { accountId: account1.id, amount },
     });
 
-    const currentBalance = await account.commands.getBalance(infra, {
+    const currentBalance = await account.commands.getBalance.handler(infra, {
       meta: null,
       data: { accountId: account1.id },
     });
-    assert.equal(currentBalance, account1.initialBalance + amount);
-    const transactions = await account.commands.getTransactions(infra, {
+    assert.equal(currentBalance.balance, account1.initialBalance + amount);
+    const transactions = await account.commands.getTransactions.handler(infra, {
       meta: null,
       data: { accountId: account1.id },
     });
@@ -95,22 +95,22 @@ describe('account', () => {
     const tx = transactions[0];
     assert.equal(tx.amount, amount);
     assert.equal(tx.accountId, account1.id);
-    assert.equal(tx.typeExternal, 'deposit');
+    assert.equal(tx.type, 'deposit');
   });
 
   it('withdraws', async () => {
     const amount = 100;
-    await account.commands.withdraw(infra, {
+    await account.commands.withdraw.handler(infra, {
       meta: null,
       data: { accountId: account1.id, amount },
     });
 
-    const currentBalance = await account.commands.getBalance(infra, {
+    const currentBalance = await account.commands.getBalance.handler(infra, {
       meta: null,
       data: { accountId: account1.id },
     });
-    assert.equal(currentBalance, account1.initialBalance - amount);
-    const transactions = await account.commands.getTransactions(infra, {
+    assert.equal(currentBalance.balance, account1.initialBalance - amount);
+    const transactions = await account.commands.getTransactions.handler(infra, {
       meta: null,
       data: { accountId: account1.id },
     });
@@ -118,12 +118,12 @@ describe('account', () => {
     const tx = transactions[0];
     assert.equal(tx.amount, amount);
     assert.equal(tx.accountId, account1.id);
-    assert.equal(tx.typeExternal, 'withdrawal');
+    assert.equal(tx.type, 'withdrawal');
   });
 
   it('transfers', async () => {
     const amount = 200;
-    await account.commands.transfer(infra, {
+    await account.commands.transfer.handler(infra, {
       meta: null,
       data: {
         fromId: account1.id,
@@ -132,33 +132,39 @@ describe('account', () => {
       },
     });
 
-    const currentBalance1 = await account.commands.getBalance(infra, {
+    const currentBalance1 = await account.commands.getBalance.handler(infra, {
       meta: null,
       data: { accountId: account1.id },
     });
-    const currentBalance2 = await account.commands.getBalance(infra, {
+    const currentBalance2 = await account.commands.getBalance.handler(infra, {
       meta: null,
       data: { accountId: account2.id },
     });
-    assert.equal(currentBalance1, account1.initialBalance - amount);
-    assert.equal(currentBalance2, account2.initialBalance + amount);
-    const transactions1 = await account.commands.getTransactions(infra, {
-      meta: null,
-      data: { accountId: account1.id },
-    });
+    assert.equal(currentBalance1.balance, account1.initialBalance - amount);
+    assert.equal(currentBalance2.balance, account2.initialBalance + amount);
+    const transactions1 = await account.commands.getTransactions.handler(
+      infra,
+      {
+        meta: null,
+        data: { accountId: account1.id },
+      },
+    );
     assert.equal(transactions1.length, 1);
     const tx1 = transactions1[0];
     assert.equal(tx1.amount, amount);
     assert.equal(tx1.accountId, account1.id);
-    assert.equal(tx1.typeExternal, 'withdrawal');
-    const transactions2 = await account.commands.getTransactions(infra, {
-      meta: null,
-      data: { accountId: account2.id },
-    });
+    assert.equal(tx1.type, 'withdrawal');
+    const transactions2 = await account.commands.getTransactions.handler(
+      infra,
+      {
+        meta: null,
+        data: { accountId: account2.id },
+      },
+    );
     assert.equal(transactions2.length, 1);
     const tx2 = transactions2[0];
     assert.equal(tx2.amount, amount);
     assert.equal(tx2.accountId, account2.id);
-    assert.equal(tx2.typeExternal, 'deposit');
+    assert.equal(tx2.type, 'deposit');
   });
 });
