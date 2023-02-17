@@ -28,19 +28,19 @@ export class LocalBus {
   async teardown() {}
 
   /** @type IBus['getSchema'] */
-  async getSchema(service, method) {
+  getSchema = async (service, method) => {
     const key = `${service}:${method}`;
     return this.#schemas.get(key);
-  }
+  };
 
   /** @type IBus['setSchema'] */
-  async setSchema(service, method, schema) {
+  setSchema = async (service, method, schema) => {
     const key = `${service}:${method}`;
     this.#schemas.set(key, schema);
-  }
+  };
 
   /** @type ICommand['call'] */
-  async call({ service: serviceName, method }, payload) {
+  call = async ({ service: serviceName, method }, payload) => {
     const service = this.#services.get(serviceName);
     const handler = service[method];
     if (!handler) {
@@ -48,31 +48,27 @@ export class LocalBus {
     }
     const result = await handler(payload);
     return result;
-  }
+  };
 
   /** @type ICommand['registerService'] */
-  registerService(name, service) {
+  registerService = (name, service) => {
     this.#services.set(name, service);
-  }
+  };
 
   /** @type IPubSub['publish'] */
-  async publish(event, payload) {
+  publish = async (event, payload) => {
     return this.#ee.emit(event, payload);
-  }
+  };
 
   /** @type IPubSub['subscribe'] */
-  subscribe(event, handler) {
+  subscribe = (event, handler) => {
     this.#ee.on(event, handler);
     return true;
-  }
+  };
 
   /** @type IPubSub['unsubscribe'] */
-  unsubscribe(event, handler) {
+  unsubscribe = (event, handler) => {
     this.#ee.removeListener(event, handler);
     return true;
-  }
-
-  getServices() {
-    return this.#services;
-  }
+  };
 }

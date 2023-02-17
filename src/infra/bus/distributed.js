@@ -33,7 +33,7 @@ export class DistributedBus {
   }
 
   /** @type IBus['listen'] */
-  async listen() {
+  listen = async () => {
     const subKey = `response:${this.#serverId}:*`;
     this.#redis.pSubscribe(subKey, this.#handleResponse);
 
@@ -43,37 +43,37 @@ export class DistributedBus {
     }
 
     while (!this.#terminating) await this.#listenRemoteEvents();
-  }
+  };
 
   /** @type IBus['teardown'] */
-  async teardown() {
+  teardown = async () => {
     this.#terminating = true;
     await setTimeout(10000);
-  }
+  };
 
   /** @type IBus['getSchema'] */
-  async getSchema(service, method) {
+  getSchema = async (service, method) => {
     const key = `${service}:${method}`;
     const strSchema = await this.#redis.hGet(this.#schemasKey, key);
     if (!strSchema) return undefined;
     const schema = JSON.parse(strSchema);
     return schema;
-  }
+  };
 
   /** @type IBus['setSchema'] */
-  async setSchema(service, method, schema) {
+  setSchema = async (service, method, schema) => {
     const key = `${service}:${method}`;
     const strSchema = JSON.stringify(schema);
     await this.#redis.hSet(this.#schemasKey, key, strSchema);
-  }
+  };
 
   /** @type ICommand['registerService'] */
-  registerService(name, service) {
+  registerService = (name, service) => {
     this.#services.set(name, service);
-  }
+  };
 
   /** @type IPubSub['publish'] */
-  async publish(event, payload) {
+  publish = async (event, payload) => {
     const streamKey = `${event}:event`;
     const data = {
       serverId: this.#serverId,
@@ -83,22 +83,22 @@ export class DistributedBus {
       TRIM: { strategy: 'MAXLEN', strategyModifier: '~', threshold: 10000 },
     });
     return true;
-  }
+  };
 
   /** @type IPubSub['subscribe'] */
-  subscribe(event, handler) {
+  subscribe = (event, handler) => {
     this.#eventHandlers.set(event, handler);
     return true;
-  }
+  };
 
   /** @type IPubSub['unsubscribe'] */
-  unsubscribe(event) {
+  unsubscribe = (event) => {
     this.#eventHandlers.delete(event);
     return true;
-  }
+  };
 
   /** @type ICommand['call'] */
-  async call({ service: serviceName, method }, payload) {
+  call = async ({ service: serviceName, method }, payload) => {
     const callId = randomUUID();
     const streamKey = `${serviceName}:${method}:request`;
     /** @type CallData */
@@ -113,20 +113,20 @@ export class DistributedBus {
     return new Promise((resolve, reject) => {
       this.#calls.set(callId, { resolve, reject });
     });
-  }
+  };
 
   /** @type {(message: string, channel: string) => void} */
-  #handleResponse(message, channel) {
+  #handleResponse = (message, channel) => {
     const callId = channel.split(':').at(-1);
     const promise = this.#calls.get(callId);
     if (!promise) return; // need to handle properly
     /** @type CallResponse */
     const response = JSON.parse(message);
     promise.resolve(response);
-  }
+  };
 
   /** @type {(serviceName: string) => Promise<void>} */
-  async #listenRemoteCalls(serviceName) {
+  #listenRemoteCalls = async (serviceName) => {
     const service = this.#services.get(serviceName);
     const streams = [];
     for (const methodName of Object.keys(service)) {
@@ -144,13 +144,13 @@ export class DistributedBus {
     const { message } = messages[0];
     const payload = /** @type CallData */ (message);
     this.#handleRemoteCall(streamName, payload);
-  }
+  };
 
   /** @type {(streamName: string, data: CallData) => Promise<void>} */
-  async #handleRemoteCall(
+  #handleRemoteCall = async (
     streamName,
     { serverId, callId, payload: strPayload },
-  ) {
+  ) => {
     const [service, method] = streamName.split(':');
     const payload = JSON.parse(strPayload);
 
@@ -158,19 +158,19 @@ export class DistributedBus {
 
     const message = JSON.stringify(result);
     this.#redis.publish(`response:${serverId}:${callId}`, message);
-  }
+  };
 
   /** @type ICommand['call'] */
-  async #localCall({ service: serviceName, method }, payload) {
+  #localCall = async ({ service: serviceName, method }, payload) => {
     const service = this.#services.get(serviceName);
     const handler = service[method];
     if (!handler)
       return [{ expected: false, message: 'Method not found' }, null];
     const result = await handler(payload);
     return result;
-  }
+  };
 
-  async #listenRemoteEvents() {
+  #listenRemoteEvents = async () => {
     const eventNames = this.#eventHandlers.keys();
     const streams = [];
     for (const event of eventNames) {
@@ -188,14 +188,14 @@ export class DistributedBus {
     const { message } = messages[0];
     const payload = /** @type CallData */ (message);
     this.#handleRemoteEvent(streamName, payload);
-  }
+  };
 
   /** @type {(streamName: string, data: CallData) => Promise<void>} */
-  async #handleRemoteEvent(streamName, { payload: strPayload }) {
+  #handleRemoteEvent = async (streamName, { payload: strPayload }) => {
     const [eventName] = streamName.split(':');
     const payload = JSON.parse(strPayload);
     const handler = this.#eventHandlers.get(eventName);
     if (!handler) console.log('Missing handler');
     await handler(payload);
-  }
+  };
 }
