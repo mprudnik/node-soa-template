@@ -2,10 +2,7 @@ import type { Infra } from '../infra/types';
 
 export interface ValidationSchema {
   auth?: unknown;
-  input?: {
-    required?: string[];
-    properties: Record<string, unknown>;
-  };
+  input?: unknown;
   output?: unknown;
 }
 
