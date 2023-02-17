@@ -5,22 +5,23 @@ import {
   AccountTransaction as AccountTransactionModel,
 } from '@prisma/client';
 
-export type WSConnectionOpen = EventHandler<
-  { serverId: string; wsId: string },
-  { userId: UserModel['id'] }
->;
+export type WSConnectionOpen = EventHandler<{
+  Meta: { serverId: string; wsId: string };
+  Data: { userId: UserModel['id'] };
+}>;
 
-export type WSConnectionClose = EventHandler<null, { userId: UserModel['id'] }>;
+export type WSConnectionClose = EventHandler<{
+  Data: { userId: UserModel['id'] };
+}>;
 
-export type AccountTransfer = EventHandler<
-  null,
-  {
+export type AccountTransfer = EventHandler<{
+  Data: {
     fromId: AccountModel['id'];
     toId: AccountModel['id'];
     amount: AccountTransactionModel['amount'];
     state: string;
-  }
->;
+  };
+}>;
 
 export interface NotificationEventHandlers {
   'ws.connection.open': WSConnectionOpen;
