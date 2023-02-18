@@ -1,9 +1,9 @@
 import type { Infra } from '../infra/types';
 
 export interface ValidationSchema {
-  auth?: unknown;
-  input?: unknown;
-  output?: unknown;
+  auth?: Record<string, unknown>;
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
 }
 
 interface CommandGenericInterface {
