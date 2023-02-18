@@ -40,7 +40,7 @@ const signUp = {
 
 /** @type Commands['signIn']  */
 const signIn = {
-  input: signInOutput,
+  input: signInInput,
   output: signInOutput,
   handler: async (infra, { data: { email, password } }) => {
     const { db } = infra;

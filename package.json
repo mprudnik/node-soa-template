@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/main.js",
   "scripts": {
-    "check": "eslint . && tsc --project .",
+    "lint": "eslint . && tsc --project .",
     "start": "node src/main.js",
     "build": "prisma generate && node ./prisma/sanitise.js",
     "test": "tap --no-coverage"
