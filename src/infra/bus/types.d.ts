@@ -1,3 +1,4 @@
+import type { ValidationSchema } from '../../server/types';
 import type { Logger } from '../logger/types';
 import type { Redis } from '../redis/types';
 
@@ -32,6 +33,15 @@ export interface PubSub {
 export interface Bus extends Command, PubSub {
   listen(): Promise<void>;
   teardown(): Promise<void>;
+  getSchema(
+    service: string,
+    method: string,
+  ): Promise<ValidationSchema | undefined>;
+  setSchema(
+    service: string,
+    method: string,
+    schema: ValidationSchema,
+  ): Promise<void>;
 }
 
 export interface LocalBusOptions {

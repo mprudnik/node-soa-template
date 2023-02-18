@@ -1,34 +1,36 @@
 import type { Command } from '../types';
-import type {
-  User as UserModel,
-  Session as SessionModel,
-} from '@prisma/client';
-
-interface AuthResult {
-  userId: UserModel['id'];
-  token: SessionModel['token'];
-}
+import type { FromSchema } from 'json-schema-to-ts';
+import {
+  signUpInput,
+  signUpOutput,
+  signInInput,
+  signInOutput,
+  signOutInput,
+  refreshInput,
+  refreshOutput,
+  verifyInput,
+  verifyOutput,
+} from './schema.js';
 
 interface AuthCommands {
-  signUp: Command<
-    null,
-    Pick<UserModel, 'email' | 'firstName' | 'lastName'> & { password: string },
-    AuthResult
-  >;
-  signIn: Command<
-    null,
-    { email: UserModel['email']; password: string },
-    AuthResult
-  >;
-  signOut: Command<null, Pick<SessionModel, 'token'>, void>;
-  refresh: Command<
-    null,
-    Pick<SessionModel, 'token'>,
-    Pick<SessionModel, 'token'>
-  >;
-  verify: Command<
-    null,
-    Pick<SessionModel, 'token'>,
-    { userId: UserModel['id'] }
-  >;
+  signUp: Command<{
+    Data: FromSchema<typeof signUpInput>;
+    Returns: FromSchema<typeof signUpOutput>;
+  }>;
+  signIn: Command<{
+    Data: FromSchema<typeof signInInput>;
+    Returns: FromSchema<typeof signInOutput>;
+  }>;
+  signOut: Command<{
+    Data: FromSchema<typeof signOutInput>;
+    Returns: void;
+  }>;
+  refresh: Command<{
+    Data: FromSchema<typeof refreshInput>;
+    Returns: FromSchema<typeof refreshOutput>;
+  }>;
+  verify: Command<{
+    Data: FromSchema<typeof verifyInput>;
+    Returns: FromSchema<typeof verifyOutput>;
+  }>;
 }

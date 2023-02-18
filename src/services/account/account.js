@@ -1,130 +1,168 @@
 /** @typedef {import('./types').AccountCommands} Commands */
 /** @typedef {import('./types').getAccountBalance} getAccountBalance */
 import { AppError } from '../../lib/error.js';
+import {
+  depositInput,
+  getBalanceInput,
+  getBalanceOutput,
+  getTransactionsInput,
+  getTransactionsOutput,
+  transferInput,
+  withdrawInput,
+} from './schema.js';
 
 /** @type Commands['deposit'] */
-const deposit = async (infra, { data: { accountId, amount } }) => {
-  const { db, bus } = infra;
+const deposit = {
+  input: depositInput,
+  handler: async (infra, { data: { accountId, amount } }) => {
+    const { db, bus } = infra;
 
-  const ledger = await db.ledger.findUnique({ where: { name: 'HouseCash' } });
-  if (!ledger) throw new AppError('Transaction failed');
+    const ledger = await db.ledger.findUnique({ where: { name: 'HouseCash' } });
+    if (!ledger) throw new AppError('Transaction failed');
 
-  await db.accountTransaction.create({
-    data: {
-      accountId,
-      amount,
-      ledgerId: ledger.id,
-      typeInternal: 'debit',
-      typeExternal: 'deposit',
-    },
-  });
-  bus.publish('account.deposit', { meta: {}, data: { accountId, amount } });
-};
-
-/** @type Commands['withdraw'] */
-const withdraw = async (infra, { data: { accountId, amount } }) => {
-  const { db, bus } = infra;
-
-  const ledger = await db.ledger.findUnique({ where: { name: 'HouseCash' } });
-  if (!ledger) throw new AppError('Transaction failed');
-
-  await db.$transaction(async (tx) => {
-    const balance = await getAccountBalance(tx, accountId);
-    if (amount > balance) throw new AppError('Insufficient funds');
-
-    await tx.accountTransaction.create({
+    await db.accountTransaction.create({
       data: {
         accountId,
         amount,
         ledgerId: ledger.id,
-        typeInternal: 'credit',
-        typeExternal: 'withdrawal',
+        typeInternal: 'debit',
+        typeExternal: 'deposit',
       },
     });
-  });
-  bus.publish('account.withdraw', { meta: {}, data: { accountId, amount } });
+    bus.publish('account.deposit', { meta: {}, data: { accountId, amount } });
+  },
+};
+
+/** @type Commands['withdraw'] */
+const withdraw = {
+  input: withdrawInput,
+  handler: async (infra, { data: { accountId, amount } }) => {
+    const { db, bus } = infra;
+
+    const ledger = await db.ledger.findUnique({ where: { name: 'HouseCash' } });
+    if (!ledger) throw new AppError('Transaction failed');
+
+    await db.$transaction(async (tx) => {
+      const balance = await getAccountBalance(tx, accountId);
+      if (amount > balance) throw new AppError('Insufficient funds');
+
+      await tx.accountTransaction.create({
+        data: {
+          accountId,
+          amount,
+          ledgerId: ledger.id,
+          typeInternal: 'credit',
+          typeExternal: 'withdrawal',
+        },
+      });
+    });
+    bus.publish('account.withdraw', { meta: {}, data: { accountId, amount } });
+  },
 };
 
 /** @type Commands['transfer'] */
-const transfer = async (infra, { data: { fromId, toId, amount } }) => {
-  const { db, bus } = infra;
+const transfer = {
+  input: transferInput,
+  handler: async (infra, { data: { fromId, toId, amount } }) => {
+    const { db, bus } = infra;
 
-  const reserveLedger = await db.ledger.findUnique({
-    where: { name: 'HouseReserve' },
-  });
-  const cashLedger = await db.ledger.findUnique({
-    where: { name: 'HouseCash' },
-  });
-  if (!reserveLedger || !cashLedger) throw new AppError('Transaction failed');
+    const reserveLedger = await db.ledger.findUnique({
+      where: { name: 'HouseReserve' },
+    });
+    const cashLedger = await db.ledger.findUnique({
+      where: { name: 'HouseCash' },
+    });
+    if (!reserveLedger || !cashLedger) throw new AppError('Transaction failed');
 
-  await db.$transaction(async (tx) => {
-    const balance = await getAccountBalance(tx, fromId);
-    if (amount > balance) throw new AppError('Insufficient funds');
+    await db.$transaction(async (tx) => {
+      const balance = await getAccountBalance(tx, fromId);
+      if (amount > balance) throw new AppError('Insufficient funds');
 
-    await tx.accountTransaction.create({
+      await tx.accountTransaction.create({
+        data: {
+          accountId: fromId,
+          amount,
+          ledgerId: reserveLedger.id,
+          typeInternal: 'credit',
+          typeExternal: 'withdrawal',
+        },
+      });
+    });
+    bus.publish('account.transfer', {
+      meta: {},
       data: {
-        accountId: fromId,
+        fromId,
+        toId,
         amount,
-        ledgerId: reserveLedger.id,
-        typeInternal: 'credit',
-        typeExternal: 'withdrawal',
+        state: 'initial',
       },
     });
-  });
-  bus.publish('account.transfer', {
-    meta: {},
-    data: {
-      fromId,
-      toId,
-      amount,
-      state: 'initial',
-    },
-  });
 
-  await db.ledgerTransaction.create({
-    data: {
-      fromId: reserveLedger.id,
-      toId: cashLedger.id,
-      amount,
-    },
-  });
-  bus.publish('account.transfer', {
-    meta: {},
-    data: {
-      fromId,
-      toId,
-      amount,
-      state: 'partial',
-    },
-  });
+    await db.ledgerTransaction.create({
+      data: {
+        fromId: reserveLedger.id,
+        toId: cashLedger.id,
+        amount,
+      },
+    });
+    bus.publish('account.transfer', {
+      meta: {},
+      data: {
+        fromId,
+        toId,
+        amount,
+        state: 'partial',
+      },
+    });
 
-  await db.accountTransaction.create({
-    data: {
-      accountId: toId,
-      amount,
-      ledgerId: cashLedger.id,
-      typeInternal: 'debit',
-      typeExternal: 'deposit',
-    },
-  });
-  bus.publish('account.transfer', {
-    meta: {},
-    data: {
-      fromId,
-      toId,
-      amount,
-      state: 'completed',
-    },
-  });
+    await db.accountTransaction.create({
+      data: {
+        accountId: toId,
+        amount,
+        ledgerId: cashLedger.id,
+        typeInternal: 'debit',
+        typeExternal: 'deposit',
+      },
+    });
+    bus.publish('account.transfer', {
+      meta: {},
+      data: {
+        fromId,
+        toId,
+        amount,
+        state: 'completed',
+      },
+    });
+  },
 };
 
 /** @type Commands['getBalance'] */
-const getBalance = (infra, { data: { accountId } }) =>
-  getAccountBalance(infra.db, accountId);
+const getBalance = {
+  input: getBalanceInput,
+  output: getBalanceOutput,
+  handler: async (infra, { data: { accountId } }) => {
+    const balance = await getAccountBalance(infra.db, accountId);
+    return { balance };
+  },
+};
 
 /** @type Commands['getTransactions'] */
-const getTransactions = (infra, { data: { accountId } }) =>
-  infra.db.accountTransaction.findMany({ where: { accountId } });
+const getTransactions = {
+  input: getTransactionsInput,
+  output: getTransactionsOutput,
+  handler: async (infra, { data: { accountId } }) => {
+    const { db } = infra;
+    const txs = await db.accountTransaction.findMany({
+      where: { accountId },
+    });
+    const transactions = txs.map(({ date, typeExternal, ...rest }) => ({
+      ...rest,
+      date: date.toISOString(),
+      type: typeExternal,
+    }));
+    return transactions;
+  },
+};
 
 /** @type getAccountBalance */
 const getAccountBalance = async (db, accountId) => {

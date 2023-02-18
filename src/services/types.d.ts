@@ -1,14 +1,34 @@
-import { Infra } from '../infra/types';
+import type { Infra } from '../infra/types';
 
-type Payload<Meta, Data> = { meta: Meta; data: Data };
+export interface ValidationSchema {
+  auth?: unknown;
+  input?: unknown;
+  output?: unknown;
+}
 
-export type Command<Meta = unknown, Data = unknown, Returns = unknown> = (
+interface CommandGenericInterface {
+  Meta: unknown;
+  Data: unknown;
+  Returns: unknown;
+}
+export type Command<
+  CommandGeneric extends Partial<CommandGenericInterface> = CommandGenericInterface,
+> = {
+  handler: (
+    infra: Infra,
+    payload: { meta: CommandGeneric['Meta']; data: CommandGeneric['Data'] },
+  ) => Promise<CommandGeneric['Returns']>;
+} & ValidationSchema;
+
+interface EventGenericInterface {
+  Meta: unknown;
+  Data: unknown;
+}
+export type EventHandler<
+  EventGeneric extends Partial<EventGenericInterface> = EventGenericInterface,
+> = (
   infra: Infra,
-  payload: Payload<Meta, Data>,
-) => Promise<Returns>;
-export type EventHandler<Meta = unknown, Data = unknown> = (
-  infra: Infra,
-  payload: Payload<Meta, Data>,
+  payload: { meta: EventGeneric['Meta']; data: EventGeneric['Data'] },
 ) => Promise<void>;
 
 export type Service = {
@@ -20,7 +40,7 @@ export function initCommands(
   infra: Infra,
   serviceName: string,
   commands: Record<string, Command>,
-): void;
+): Promise<void>;
 
 export function initEventHandlers(
   infra: Infra,

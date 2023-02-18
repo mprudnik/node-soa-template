@@ -35,6 +35,10 @@ const { definitions } = JSON.parse(src);
 
 const entities = sanitizeSchema(definitions);
 
-const fileStart = '/* eslint-disable */\nexport default ';
-await fs.writeFile(pathToJsSchema, fileStart + JSON.stringify(entities));
+const fileStart = '/* eslint-disable */\nexport default /** @type {const} */ (';
+const fileEnd = ')';
+await fs.writeFile(
+  pathToJsSchema,
+  fileStart + JSON.stringify(entities) + fileEnd,
+);
 await fs.rm(pathToJsonSchema);
