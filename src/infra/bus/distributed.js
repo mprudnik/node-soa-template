@@ -7,15 +7,14 @@
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 
-// Create general implementation that will work without
-// dependency on local bus.
-// PubSub should be implemented using redis streams.
 /** @implements {IBus} */
 export class DistributedBus {
+  #redis;
+  #logger;
   #services;
   #eventHandlers;
-  #redis;
   #calls;
+  #processing;
 
   /** @type string */
   #serverId;
@@ -24,31 +23,34 @@ export class DistributedBus {
   #schemasKey = 'internal:schemas';
 
   /** @type Init */
-  constructor({ redis }, { serverId }) {
+  constructor({ redis, logger }, { serverId }) {
     this.#serverId = serverId;
     this.#redis = redis;
+    this.#logger = logger;
     this.#eventHandlers = new Map();
     this.#services = new Map();
     this.#calls = new Map();
+    this.#processing = [];
   }
 
   /** @type IBus['listen'] */
   listen = async () => {
     const subKey = `response:${this.#serverId}:*`;
-    this.#redis.pSubscribe(subKey, this.#handleResponse);
+    await this.#redis.pSubscribe(subKey, this.#handleResponse);
 
     const services = this.#services.keys();
-    for (const serviceName of services) {
-      while (!this.#terminating) await this.#listenRemoteCalls(serviceName);
-    }
-
-    while (!this.#terminating) await this.#listenRemoteEvents();
+    for (const service of services) this.#listenRemoteCalls(service);
+    this.#listenRemoteEvents();
   };
 
   /** @type IBus['teardown'] */
   teardown = async () => {
+    this.#logger.info('Stopping bus');
     this.#terminating = true;
-    await setTimeout(10000);
+    const timeout = setTimeout(10_000);
+    const finishProcessing = Promise.allSettled(this.#processing);
+    await Promise.race([finishProcessing, timeout]);
+    this.#logger.info('Bus stopped');
   };
 
   /** @type IBus['getSchema'] */
@@ -133,17 +135,14 @@ export class DistributedBus {
       const key = `${serviceName}:${methodName}:request`;
       streams.push({ key, id: '>' });
     }
-    const events = await this.#redis.xReadGroup(
-      serviceName,
-      this.#serverId,
-      streams,
-      { COUNT: 1, BLOCK: 10000, NOACK: true },
-    );
-    if (!events?.length) return;
-    const { name: streamName, messages } = events[0];
-    const { message } = messages[0];
-    const payload = /** @type CallData */ (message);
-    this.#handleRemoteCall(streamName, payload);
+    do {
+      await this.#processGroupStreams(
+        serviceName,
+        this.#serverId,
+        streams,
+        this.#handleRemoteCall,
+      );
+    } while (!this.#terminating);
   };
 
   /** @type {(streamName: string, data: CallData) => Promise<void>} */
@@ -177,17 +176,14 @@ export class DistributedBus {
       const key = `${event}:event`;
       streams.push({ key, id: '>' });
     }
-    const events = await this.#redis.xReadGroup(
-      'events',
-      this.#serverId,
-      streams,
-      { COUNT: 1, BLOCK: 10000, NOACK: true },
-    );
-    if (!events?.length) return;
-    const { name: streamName, messages } = events[0];
-    const { message } = messages[0];
-    const payload = /** @type CallData */ (message);
-    this.#handleRemoteEvent(streamName, payload);
+    do {
+      await this.#processGroupStreams(
+        'events',
+        this.#serverId,
+        streams,
+        this.#handleRemoteEvent,
+      );
+    } while (!this.#terminating);
   };
 
   /** @type {(streamName: string, data: CallData) => Promise<void>} */
@@ -197,5 +193,25 @@ export class DistributedBus {
     const handler = this.#eventHandlers.get(eventName);
     if (!handler) console.log('Missing handler');
     await handler(payload);
+  };
+
+  /** @type {(
+   * group: string,
+   * consumer: string,
+   * streams: { key: string; id: string; }[],
+   * processor: (streamName: string, data: CallData) => Promise<any>,
+   * ) => Promise<void>} */
+  #processGroupStreams = async (group, consumer, streams, processor) => {
+    const events = await this.#redis.xReadGroup(group, consumer, streams, {
+      COUNT: 1,
+      BLOCK: 10000,
+      NOACK: true,
+    });
+    if (!events?.length) return;
+    const { name: streamName, messages } = events[0];
+    const { message } = messages[0];
+    const payload = /** @type CallData */ (message);
+    const process = processor(streamName, payload);
+    this.#processing.push(process);
   };
 }
