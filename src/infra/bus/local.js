@@ -42,6 +42,9 @@ export class LocalBus {
   /** @type ICommand['call'] */
   call = async ({ service: serviceName, method }, payload) => {
     const service = this.#services.get(serviceName);
+    if (!service) {
+      return [{ expected: false, message: 'Service not found' }, null];
+    }
     const handler = service[method];
     if (!handler) {
       return [{ expected: false, message: 'Method not found' }, null];

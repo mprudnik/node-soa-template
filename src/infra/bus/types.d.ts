@@ -1,4 +1,4 @@
-import type { ValidationSchema } from '../../server/types';
+import type { ValidationSchema } from '../../services/types';
 import type { Logger } from '../logger/types';
 import type { Redis } from '../redis/types';
 
