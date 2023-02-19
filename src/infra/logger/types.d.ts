@@ -1,10 +1,6 @@
-import { BaseLogger } from 'pino';
+import { BaseLogger, Logger as FullLogger } from 'pino';
 
-export type Logger = Pick<
-  BaseLogger,
-  'level' | 'silent' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
->;
-
+export type Logger = BaseLogger & Pick<FullLogger, 'child'>;
 export interface LoggerOptions {
   env: 'development' | 'production' | 'test';
 }

@@ -1,8 +1,6 @@
 /** @typedef {import('./types').Bus} IBus */
 /** @typedef {import('./types').Command} ICommand */
 /** @typedef {import('./types').PubSub} IPubSub */
-/** @typedef {import('./types').CallData} CallData */
-/** @typedef {import('./types').CallResponse} CallResponse */
 /** @typedef {import('./types').InitLocal} Init */
 import { EventEmitter } from 'node:events';
 
@@ -45,10 +43,12 @@ export class LocalBus {
     if (!service) {
       return [{ expected: false, message: 'Service not found' }, null];
     }
+
     const handler = service[method];
     if (!handler) {
       return [{ expected: false, message: 'Method not found' }, null];
     }
+
     const result = await handler(payload);
     return result;
   };

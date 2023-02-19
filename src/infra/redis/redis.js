@@ -15,6 +15,6 @@ export const init = async ({ logger }, { url }) => {
 
 /** @type teardown */
 export const teardown = async ({ logger, redis }) => {
-  await redis.disconnect();
+  await redis.quit();
   logger.info('Redis disconnected');
 };

@@ -69,7 +69,7 @@ describe('account', () => {
     await db.accountTransaction.deleteMany({});
     await db.ledgerTransaction.deleteMany({});
     await db.accountStatement.deleteMany({});
-    await db.account.deleteMany({}).catch(console.log);
+    await db.account.deleteMany({});
     await db.ledger.deleteMany({});
     await db.user.deleteMany({});
     await teardownInfra(infra);
