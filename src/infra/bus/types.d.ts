@@ -14,7 +14,6 @@ export type CallHandler = (
 export type ServiceError = { message: string; expected: boolean };
 export type CallResult = [ServiceError | null, any];
 export type CallData = { serverId: string; callId: string; payload: string };
-export type CallResponse = { callId: string; result: CallResult };
 
 export interface Command {
   call(
@@ -51,6 +50,10 @@ export interface LocalBusOptions {
 export interface DistributedBusOptions {
   type: 'distributed';
   serverId: string;
+  readInterval: number;
+  callTimeout: number;
+  maxEventStreamSize: number;
+  maxCallStreamSize: number;
 }
 
 export type BusOptions = LocalBusOptions | DistributedBusOptions;
