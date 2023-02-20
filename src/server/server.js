@@ -32,7 +32,8 @@ export const init = async (infra, api, options) => {
           return { valid: false, access: false, message: error.message };
       }
 
-      return result;
+      // TODO - remove conversion to any after adding call type inference
+      return /** @type {any} */ (result);
     },
   });
 

@@ -1,6 +1,6 @@
 /** @typedef {import('./types').AuthCommands} Commands */
 import * as crypto from '../../lib/crypto.js';
-import { AppError } from '../../lib/error.js';
+import { ServiceError } from '../error.js';
 import {
   signUpInput,
   signUpOutput,
@@ -21,7 +21,7 @@ const signUp = {
     const { db, bus } = infra;
 
     const exists = await db.user.findUnique({ where: { email } });
-    if (exists) throw new AppError('Already exists');
+    if (exists) throw new ServiceError('Already exists');
 
     const passwordHash = await crypto.hash(password);
 
@@ -46,10 +46,10 @@ const signIn = {
     const { db } = infra;
 
     const user = await db.user.findUnique({ where: { email } });
-    if (!user) throw new AppError('Invalid credentials');
+    if (!user) throw new ServiceError('Invalid credentials');
 
     const valid = await crypto.compare(password, user.passwordHash);
-    if (!valid) throw new AppError('Invalid credentials');
+    if (!valid) throw new ServiceError('Invalid credentials');
 
     const { id: userId } = user;
     const token = crypto.random();
@@ -68,7 +68,7 @@ const signOut = {
     const exists = await db.session
       .delete({ where: { token } })
       .catch(() => false);
-    if (!exists) throw new AppError('Not found');
+    if (!exists) throw new ServiceError('Not found');
   },
 };
 
@@ -80,7 +80,7 @@ const refresh = {
     const { db } = infra;
 
     const session = await db.session.findUnique({ where: { token } });
-    if (!session) throw new AppError('Not found');
+    if (!session) throw new ServiceError('Not found');
 
     const newToken = crypto.random();
     await db.session.update({
@@ -100,7 +100,7 @@ const verify = {
     const { db } = infra;
 
     const session = await db.session.findUnique({ where: { token } });
-    if (!session) throw new AppError('Not found');
+    if (!session) throw new ServiceError('Not found');
 
     return { userId: session.userId };
   },

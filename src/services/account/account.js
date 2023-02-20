@@ -1,6 +1,6 @@
 /** @typedef {import('./types').AccountCommands} Commands */
 /** @typedef {import('./types').getAccountBalance} getAccountBalance */
-import { AppError } from '../../lib/error.js';
+import { ServiceError } from '../error.js';
 import {
   depositInput,
   getBalanceInput,
@@ -18,7 +18,7 @@ const deposit = {
     const { db, bus } = infra;
 
     const ledger = await db.ledger.findUnique({ where: { name: 'HouseCash' } });
-    if (!ledger) throw new AppError('Transaction failed');
+    if (!ledger) throw new ServiceError('Transaction failed');
 
     await db.accountTransaction.create({
       data: {
@@ -29,7 +29,7 @@ const deposit = {
         typeExternal: 'deposit',
       },
     });
-    bus.publish('account.deposit', { meta: {}, data: { accountId, amount } });
+    bus.publish('account.deposit', { data: { accountId, amount } });
   },
 };
 
@@ -40,11 +40,11 @@ const withdraw = {
     const { db, bus } = infra;
 
     const ledger = await db.ledger.findUnique({ where: { name: 'HouseCash' } });
-    if (!ledger) throw new AppError('Transaction failed');
+    if (!ledger) throw new ServiceError('Transaction failed');
 
     await db.$transaction(async (tx) => {
       const balance = await getAccountBalance(tx, accountId);
-      if (amount > balance) throw new AppError('Insufficient funds');
+      if (amount > balance) throw new ServiceError('Insufficient funds');
 
       await tx.accountTransaction.create({
         data: {
@@ -56,7 +56,7 @@ const withdraw = {
         },
       });
     });
-    bus.publish('account.withdraw', { meta: {}, data: { accountId, amount } });
+    bus.publish('account.withdraw', { data: { accountId, amount } });
   },
 };
 
@@ -72,11 +72,13 @@ const transfer = {
     const cashLedger = await db.ledger.findUnique({
       where: { name: 'HouseCash' },
     });
-    if (!reserveLedger || !cashLedger) throw new AppError('Transaction failed');
+    if (!reserveLedger || !cashLedger) {
+      throw new ServiceError('Transaction failed');
+    }
 
     await db.$transaction(async (tx) => {
       const balance = await getAccountBalance(tx, fromId);
-      if (amount > balance) throw new AppError('Insufficient funds');
+      if (amount > balance) throw new ServiceError('Insufficient funds');
 
       await tx.accountTransaction.create({
         data: {
