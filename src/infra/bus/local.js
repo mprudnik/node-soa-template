@@ -2,6 +2,7 @@
 /** @typedef {import('./types').Command} ICommand */
 /** @typedef {import('./types').PubSub} IPubSub */
 /** @typedef {import('./types').InitLocal} Init */
+import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 
 /** @implements {IBus} */
@@ -38,7 +39,7 @@ export class LocalBus {
   };
 
   /** @type ICommand['call'] */
-  call = async ({ service: serviceName, method }, payload) => {
+  call = async ({ service: serviceName, method }, { meta = {}, data }) => {
     const service = this.#services.get(serviceName);
     if (!service) {
       return [{ expected: false, message: 'Service not found' }, null];
@@ -49,7 +50,8 @@ export class LocalBus {
       return [{ expected: false, message: 'Method not found' }, null];
     }
 
-    const result = await handler(payload);
+    meta.operationId = meta.operationId ?? randomUUID();
+    const result = await handler({ meta, data });
     return result;
   };
 
@@ -59,8 +61,9 @@ export class LocalBus {
   };
 
   /** @type IPubSub['publish'] */
-  publish = async (event, payload) => {
-    return this.#ee.emit(event, payload);
+  publish = async (event, { meta = {}, data }) => {
+    meta.operationId = meta.operationId ?? randomUUID();
+    return this.#ee.emit(event, { meta, data });
   };
 
   /** @type IPubSub['subscribe'] */
@@ -73,5 +76,25 @@ export class LocalBus {
   unsubscribe = (event, handler) => {
     this.#ee.removeListener(event, handler);
     return true;
+  };
+
+  /** @type IBus['withMeta'] */
+  withMeta = (meta) => {
+    const allowedMethods = ['call', 'publish'];
+    return new Proxy(this, {
+      get(target, prop) {
+        if (typeof prop === 'string' && allowedMethods.includes(prop)) {
+          return undefined;
+        }
+
+        const method = target[prop];
+
+        return ({ meta: original, data }) =>
+          method({
+            data,
+            meta: { ...original, ...meta },
+          });
+      },
+    });
   };
 }

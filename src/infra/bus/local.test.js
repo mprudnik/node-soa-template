@@ -35,7 +35,8 @@ describe('local bus', () => {
       payload,
     );
     assert.equal(error, null);
-    assert.deepEqual(result, payload);
+    assert.ok('operationId' in /** @type any */ (result).meta);
+    assert.deepStrictEqual(result, payload);
   });
 
   it('handles missing service/commands', async () => {
@@ -69,6 +70,7 @@ describe('local bus', () => {
     bus.subscribe(eventName, async (payload) => {
       results.called = true;
       results.payload = payload;
+      return /** @type {any} */ ({});
     });
 
     const payload = { meta: {}, data: { test: 'test' } };
@@ -77,6 +79,7 @@ describe('local bus', () => {
     await setTimeout(10);
 
     assert.ok(results.called);
+    assert.ok('operationId' in results.payload.meta);
     assert.deepEqual(results.payload, payload);
   });
 });

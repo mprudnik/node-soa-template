@@ -94,12 +94,13 @@ export class DistributedBus {
   };
 
   /** @type IPubSub['publish'] */
-  publish = async (event, payload) => {
+  publish = async (event, { meta = {}, data }) => {
     const streamKey = `${event}:event`;
-    const data = { payload: JSON.stringify(payload) };
+    meta.operationId = meta.operationId ?? randomUUID();
+    const payload = { payload: JSON.stringify({ meta, data }) };
 
     const { maxEventStreamSize: threshold } = this.#options;
-    await this.#redis.xAdd(streamKey, '*', data, {
+    await this.#redis.xAdd(streamKey, '*', payload, {
       TRIM: { strategy: 'MAXLEN', strategyModifier: '~', threshold },
     });
 
@@ -120,19 +121,20 @@ export class DistributedBus {
   };
 
   /** @type ICommand['call'] */
-  call = async ({ service: serviceName, method }, payload) => {
+  call = async ({ service: serviceName, method }, { meta = {}, data }) => {
     const { serverId } = this.#options;
     const callId = randomUUID();
+    meta.operationId = meta.operationId ?? randomUUID();
     const streamKey = `${serviceName}:${method}:request`;
     /** @type CallData */
-    const data = {
+    const payload = {
       serverId,
       callId,
-      payload: JSON.stringify(payload),
+      payload: JSON.stringify({ meta, data }),
     };
 
     const { maxCallStreamSize: threshold } = this.#options;
-    await this.#redis.xAdd(streamKey, '*', data, {
+    await this.#redis.xAdd(streamKey, '*', payload, {
       TRIM: { strategy: 'MAXLEN', strategyModifier: '~', threshold },
     });
 
@@ -352,5 +354,25 @@ export class DistributedBus {
     const processId = randomUUID();
     this.#processing.set(processId, process);
     process.then(() => this.#processing.delete(processId));
+  };
+
+  /** @type IBus['withMeta'] */
+  withMeta = (meta) => {
+    const allowedMethods = ['call', 'publish'];
+    return new Proxy(this, {
+      get(target, prop) {
+        if (typeof prop === 'string' && allowedMethods.includes(prop)) {
+          return undefined;
+        }
+
+        const method = target[prop];
+
+        return ({ meta: original, data }) =>
+          method({
+            data,
+            meta: { ...original, ...meta },
+          });
+      },
+    });
   };
 }

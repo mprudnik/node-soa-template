@@ -85,6 +85,7 @@ describe('distributed bus', () => {
       payload,
     );
     assert.equal(error, null);
+    assert.ok('operationId' in /** @type any */ (result).meta);
     assert.deepEqual(result, payload);
   });
 
@@ -121,6 +122,7 @@ describe('distributed bus', () => {
     receiver.subscribe(eventName, async (payload) => {
       results.called = true;
       results.payload = payload;
+      return /** @type {any} */ ({});
     });
     await receiver.listen();
 
@@ -130,6 +132,7 @@ describe('distributed bus', () => {
     await setTimeout(10);
 
     assert.ok(results.called);
+    assert.ok('operationId' in results.payload.meta);
     assert.deepEqual(results.payload, payload);
   });
 });

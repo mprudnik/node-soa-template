@@ -1,18 +1,25 @@
-import type { ValidationSchema } from '../../services/types';
 import type { Logger } from '../logger/types';
 import type { Redis } from '../redis/types';
+import type {
+  ValidationSchema,
+  DefaultMeta,
+  Command as RawCall,
+  EventHandler as RawEventHandler,
+  WrappedServiceFunction as ServiceFunction,
+} from '../../services/types';
 
-export interface DefaultMeta {
-  operationId: string;
-  [key: string]: unknown;
-}
-export type Payload<Meta = object, Data = unknown> = { meta: Meta; data: Data };
-export type EventHandler = (event: Payload<DefaultMeta>) => Promise<void>;
-export type CallHandler = (
-  payload: Payload<DefaultMeta>,
-) => Promise<CallResult>;
-export type ServiceError = { message: string; expected: boolean };
-export type CallResult = [ServiceError | null, any];
+export type EventHandler = ServiceFunction<
+  RawEventHandler<{ Meta: Partial<DefaultMeta> }>
+>;
+export type CallHandler = ServiceFunction<
+  RawCall<{ Meta: Partial<DefaultMeta> }>['handler']
+>;
+export type Payload = {
+  meta?: Parameters<CallHandler>[0]['meta'];
+  data: Parameters<CallHandler>[0]['meta'];
+};
+export type CallResult = Awaited<ReturnType<CallHandler>>;
+
 export type CallData = { serverId: string; callId: string; payload: string };
 
 export interface Command {
@@ -41,6 +48,7 @@ export interface Bus extends Command, PubSub {
     method: string,
     schema: ValidationSchema,
   ): Promise<void>;
+  withMeta(meta: object): Bus;
 }
 
 export interface LocalBusOptions {
