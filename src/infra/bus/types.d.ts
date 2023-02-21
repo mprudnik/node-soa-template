@@ -16,7 +16,7 @@ export type CallHandler = ServiceFunction<
 >;
 export type Payload = {
   meta?: Parameters<CallHandler>[0]['meta'];
-  data: Parameters<CallHandler>[0]['meta'];
+  data: Parameters<CallHandler>[0]['data'];
 };
 export type CallResult = Awaited<ReturnType<CallHandler>>;
 
