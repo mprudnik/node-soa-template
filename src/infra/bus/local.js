@@ -11,6 +11,8 @@ export class LocalBus {
   #services;
   #schemas;
 
+  #proxyMethods = ['call', 'publish'];
+
   /** @type Init */
   constructor() {
     this.#ee = new EventEmitter();
@@ -80,10 +82,9 @@ export class LocalBus {
 
   /** @type IBus['withMeta'] */
   withMeta = (meta) => {
-    const allowedMethods = ['call', 'publish'];
     return new Proxy(this, {
       get(target, prop) {
-        if (typeof prop === 'string' && allowedMethods.includes(prop)) {
+        if (typeof prop !== 'string' || !target.#proxyMethods.includes(prop)) {
           return undefined;
         }
 

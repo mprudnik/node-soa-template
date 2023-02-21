@@ -28,6 +28,8 @@ export class DistributedBus {
 
   #eventsGroupName = 'events';
   #schemasKey = 'internal:schemas';
+ 
+  #proxyMethods = ['call', 'publish'];
 
   /** @type Init */
   constructor({ redis, logger }, options) {
@@ -358,10 +360,9 @@ export class DistributedBus {
 
   /** @type IBus['withMeta'] */
   withMeta = (meta) => {
-    const allowedMethods = ['call', 'publish'];
     return new Proxy(this, {
       get(target, prop) {
-        if (typeof prop === 'string' && allowedMethods.includes(prop)) {
+        if (typeof prop !== 'string' || !target.#proxyMethods.includes(prop)) {
           return undefined;
         }
 
