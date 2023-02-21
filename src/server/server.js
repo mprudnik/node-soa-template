@@ -37,9 +37,7 @@ export const init = async (infra, api, options) => {
     await server.register(customHttp, {
       api: api.http,
       prefix: '/api',
-      getSchema: bus.getSchema,
-      executeCommand: (command, payload, meta) =>
-        bus.call(command, { meta, data: payload }),
+      bus,
     });
   }
 
