@@ -1,28 +1,21 @@
-import type { PrismaClient, Prisma } from '@prisma/client';
-import { BaseLogger } from 'pino';
+import type { Logger, LoggerOptions } from './logger/types';
+import type { DB, DBOptions } from './db/types';
+import type { Redis, RedisOptions } from './redis/types';
+import type { Bus, BusOptions } from './bus/types';
 
-type Event = { meta: any; data: any };
-type EventHandler = (event: Event) => any;
-
-export type Logger = Pick<BaseLogger, 'silent' | 'trace' | 'level' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'>;
-export type DB = PrismaClient;
-export interface Bus {
-  command(command: { service: string; method: string; }, payload: object): Promise<any>;
-  registerService(name: string, service: object): void;
-  unsubscribe(eventName: string, handler: EventHandler): boolean;
-  subscribe(eventName: string, handler: EventHandler): boolean;
-  publish(eventName: string, event: Event): boolean;
+export interface InfraOptions {
+  logger: LoggerOptions;
+  db: DBOptions;
+  redis: RedisOptions;
+  bus: BusOptions;
 }
 
-export type Infra = {
-  bus: Bus;
+export interface Infra {
   logger: Logger;
   db: DB;
-};
-
-export type LoggerConfig = { env: string };
-export type DBConfig = Prisma.PrismaClientOptions;
-export type InfraConfig = {
-  logger: LoggerConfig;
-  db: DBConfig;
+  redis: Redis;
+  bus: Bus;
 }
+
+export function init(options: InfraOptions): Promise<Infra>;
+export function teardown(infra: Infra): Promise<void>;

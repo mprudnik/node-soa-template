@@ -1,13 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { FastifyAuthFunction } from '@fastify/auth';
 
+type AuthFailure = { valid: boolean; access: boolean; message: string };
+type AuthSuccess = { valid: true; access: true; session: any };
 export interface AuthPluginOptions {
-  verifyToken: (token: string, definition: any) => Promise<{
-    valid: boolean;
-    access: boolean;
-    message: string;
-    session: any;
-  }>;
+  verifyToken: (
+    token: string,
+    definition: any,
+  ) => Promise<AuthSuccess | AuthFailure>;
 }
 
 export type AuthPlugin = FastifyPluginAsync<AuthPluginOptions>;
@@ -22,5 +22,3 @@ declare module 'fastify' {
     session: any;
   }
 }
-
-

@@ -1,45 +1,44 @@
-import { Command } from '../types';
+import type { Command } from '../types';
+import type { FromSchema } from 'json-schema-to-ts';
 import type {
   Prisma,
   PrismaClient,
   Account as AccountModel,
-  AccountTransaction as AccountTransactionModel,
 } from '@prisma/client';
+import {
+  depositInput,
+  withdrawInput,
+  transferInput,
+  getBalanceInput,
+  getBalanceOutput,
+  getTransactionsInput,
+  getTransactionsOutput,
+} from './schema.js';
 
 interface AccountCommands {
-  deposit: Command<
-    null,
-    { accountId: AccountModel['id']; amount: AccountTransactionModel['amount']; },
-    void
-  >,
-  withdraw: Command<
-    null,
-    { accountId: AccountModel['id']; amount: AccountTransactionModel['amount']; },
-    void
-  >,
-  transfer: Command<
-    null,
-    {
-      fromId: AccountModel['id'];
-      toId: AccountModel['id'];
-      amount: AccountTransactionModel['amount'];
-    },
-    void
-  >,
-  getBalance: Command<
-    null,
-    { accountId: AccountModel['id'] },
-    number
-  >,
-  getTransactions: Command<
-    null,
-    { accountId: AccountModel['id'] },
-    AccountTransactionModel[]
-  >,
+  deposit: Command<{
+    Data: FromSchema<typeof depositInput>;
+    Returns: void;
+  }>;
+  withdraw: Command<{
+    Data: FromSchema<typeof withdrawInput>;
+    Returns: void;
+  }>;
+  transfer: Command<{
+    Data: FromSchema<typeof transferInput>;
+    Returns: void;
+  }>;
+  getBalance: Command<{
+    Data: FromSchema<typeof getBalanceInput>;
+    Returns: FromSchema<typeof getBalanceOutput>;
+  }>;
+  getTransactions: Command<{
+    Data: FromSchema<typeof getTransactionsInput>;
+    Returns: FromSchema<typeof getTransactionsOutput>;
+  }>;
 }
 
 export function getAccountBalance(
   db: Prisma.TransactionClient | PrismaClient,
   accountId: AccountModel['id'],
 ): Promise<number>;
-

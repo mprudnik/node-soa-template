@@ -26,10 +26,11 @@ const websocket = async (fastify, options) => {
       const { accountId } = req.session;
       const wsId = randomUUID();
 
-      /** @type {(payload: { meta?: any, data: any}) => void} */
-      const messageHandler = ({ meta, data }) => {
+      /** @type {(payload: { meta?: any, data: any}) => Promise<any>} */
+      const messageHandler = async ({ meta, data }) => {
         const { wsId } = meta;
         const socket = wsConnections.get(wsId);
+        if (!socket) return;
         socket.send(JSON.stringify(data));
       };
 

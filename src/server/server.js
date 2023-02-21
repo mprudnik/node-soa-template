@@ -22,19 +22,24 @@ export const init = async (infra, api, options) => {
 
   await server.register(swagger, options.swagger);
   await server.register(customAuth, {
-    verifyToken: (token, definition) =>
-      bus.command(
+    verifyToken: async (token, definition) => {
+      const [error, session] = await bus.call(
         { service: 'auth', method: 'verify' },
         { data: { token, definition } },
-      ),
+      );
+      if (error) return { valid: false, access: false, message: error.message };
+
+      return { valid: true, access: true, session };
+    },
   });
 
   if (api.http) {
     await server.register(customHttp, {
       api: api.http,
       prefix: '/api',
+      getSchema: bus.getSchema,
       executeCommand: (command, payload, meta) =>
-        bus.command(command, { meta, data: payload }),
+        bus.call(command, { meta, data: payload }),
     });
   }
 

@@ -1,5 +1,5 @@
 /** @typedef {import('./types').NotificationEventHandlers} EventHandlers */
-import { AppError } from '../../lib/error.js';
+import { ServiceError } from '../error.js';
 
 const initialisedUsers = new Map();
 
@@ -26,12 +26,12 @@ const accountTransfer = async (infra, { data }) => {
     where: { id: fromId },
     include: { owner: true },
   });
-  if (!sender) throw new AppError('Sender not found');
+  if (!sender) throw new ServiceError('Sender not found');
   const receiver = await db.account.findUnique({
     where: { id: toId },
     include: { owner: true },
   });
-  if (!receiver) throw new AppError('Receiver not found');
+  if (!receiver) throw new ServiceError('Receiver not found');
 
   const senderMeta = initialisedUsers.get(sender.owner.id);
   if (senderMeta) {

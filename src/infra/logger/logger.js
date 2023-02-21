@@ -1,5 +1,8 @@
+/** @typedef {import('./types').init} init */
+/** @typedef {import('pino').LoggerOptions} Options */
 import { pino } from 'pino';
 
+/** @type {Record<string, string>} */
 const PinoLevelToSeverityLookup = {
   trace: 'DEBUG',
   debug: 'DEBUG',
@@ -9,6 +12,7 @@ const PinoLevelToSeverityLookup = {
   fatal: 'CRITICAL',
 };
 
+/** @type {Record<string, Options>} */
 const options = {
   development: {
     level: 'trace',
@@ -36,4 +40,5 @@ const options = {
   },
 };
 
+/** @type init */
 export const init = ({ env }) => pino(options[env]);

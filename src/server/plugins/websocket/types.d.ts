@@ -7,4 +7,3 @@ export interface WebsocketPluginOptions {
 }
 
 export type WebsocketPlugin = FastifyPluginAsync<WebsocketPluginOptions>;
-

@@ -9,4 +9,3 @@ export interface SwaggerPluginOptions {
 }
 
 export type SwaggerPlugin = FastifyPluginAsync<SwaggerPluginOptions>;
-

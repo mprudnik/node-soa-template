@@ -1,16 +1,37 @@
 {
-  "extends": ["metarhia", "plugin:prettier/recommended"],
+  "extends": [
+    "metarhia",
+    "plugin:prettier/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "env": {
-    "browser": true,
     "es6": true,
     "node": true
   },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
   "rules": {
     "strict": "off",
-    "no-use-before-define": "off"
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]
   },
   "parserOptions": {
     "sourceType": "module",
     "ecmaVersion": "latest"
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": "path/to/folder"
+      }
+    }
   }
 }

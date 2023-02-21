@@ -1,18 +1,12 @@
-import type { FastifyInstance, RouteOptions } from "fastify";
-import type { Infra } from '../infra/types';
+import type { FastifyInstance, RouteOptions } from 'fastify';
 import type { FastifyCorsOptions } from '@fastify/cors';
 import type { FastifyAuthPluginOptions } from '@fastify/auth';
 import type { SwaggerPluginOptions } from './plugins/swagger/types';
+import type { Infra } from '../infra/types';
 
 export interface HTTPRoute extends Pick<RouteOptions, 'method' | 'url'> {
-  auth?: unknown;
-  input?: {
-    source: 'body' | 'query';
-    required?: string[];
-    properties: Record<string, unknown>;
-  };
-  output?: unknown;
-  command: { service: string; method: string; };
+  inputSource: 'body' | 'query';
+  command: { service: string; method: string };
 }
 
 export type Server = FastifyInstance;
@@ -28,6 +22,9 @@ export interface ServerConfig {
   swagger: SwaggerPluginOptions;
 }
 
-export function init(infra: Infra, api: API, config: ServerConfig): Promise<Server>;
+export function init(
+  infra: Infra,
+  api: API,
+  config: ServerConfig,
+): Promise<Server>;
 export function teardown(infra: Infra, server: Server): Promise<void>;
-
