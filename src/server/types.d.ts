@@ -26,6 +26,10 @@ export type API = {
 export interface ServerConfig {
   host: string;
   port: number;
+  enabledApi: {
+    http: boolean;
+    ws: boolean;
+  };
   healthCheckUrl: string;
   env: string;
   cors: FastifyCorsOptions;

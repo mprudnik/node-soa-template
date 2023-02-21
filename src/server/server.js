@@ -33,7 +33,8 @@ export const init = async (infra, api, options) => {
     },
   });
 
-  if (api.http) {
+  const { enabledApi } = options;
+  if (enabledApi.http && api.http) {
     await server.register(customHttp, {
       api: api.http,
       prefix: '/api',
@@ -41,7 +42,7 @@ export const init = async (infra, api, options) => {
     });
   }
 
-  if (api.ws) {
+  if (enabledApi.ws && api.ws) {
     await server.register(customWebsocket, {
       serverId,
       bus,

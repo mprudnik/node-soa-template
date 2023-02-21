@@ -13,8 +13,10 @@ const services = {
 };
 
 /** @type ServiceFuncs['init'] */
-export const init = async (infra) => {
+export const init = async (infra, config) => {
+  const { enabledServices: enabled } = config;
   for (const [serviceName, service] of Object.entries(services)) {
+    if (enabled !== 'all' && !enabled.includes(serviceName)) continue;
     const { commands, eventHandlers } = service;
     if (commands) await initCommands(infra, serviceName, commands);
     if (eventHandlers) initEventHandlers(infra, serviceName, eventHandlers);

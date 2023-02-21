@@ -9,6 +9,7 @@ export default {
   host,
   port,
   env: nodeEnv,
+  enabledApi: { http: true, ws: true },
   healthCheckUrl: '/',
   cors: {
     origin: '*',

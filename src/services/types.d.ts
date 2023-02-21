@@ -1,5 +1,9 @@
 import type { Infra } from '../infra/types';
 
+export interface ServicesConfig {
+  enabledServices: 'all' | string[];
+}
+
 export interface WrappedInfra extends Omit<Infra, 'bus'> {
   bus: Pick<Infra['bus'], 'call' | 'publish'>;
 }
@@ -83,4 +87,4 @@ export function initEventHandlers(
   eventHandlers: Record<string, EventHandler>,
 ): void;
 
-export function init(infra: Infra): Promise<void>;
+export function init(infra: Infra, config: ServicesConfig): Promise<void>;
