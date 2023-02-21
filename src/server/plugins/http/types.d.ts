@@ -21,11 +21,10 @@ export interface SchemaOptions
 
 export function getRouteOptions(
   route: HTTPRoute,
-  service: string,
   fullUrl: string,
-  server: FastifyInstance,
   bus: Bus,
-): Promise<RouteOptions | null>;
+  server: FastifyInstance,
+): RouteOptions | null;
 export function getRouteOptionsFromRaw(
   route: HTTPRouteRaw,
   fullUrl: string,

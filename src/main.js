@@ -11,6 +11,7 @@ const start = async () => {
   const infra = await initInfra(config.infra);
 
   await initServices(infra);
+
   await infra.bus.listen();
 
   const server = await initServer(infra, api, config.server);

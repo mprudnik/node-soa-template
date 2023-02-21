@@ -10,6 +10,14 @@ const options = {
   dependencies: ['custom-auth'],
 };
 
+class SystemError extends Error {
+  constructor({ message, expected, url }) {
+    super(message);
+    this.expected = expected;
+    this.url = url;
+  }
+}
+
 /** @type Plugin */
 const http = async (server, options) => {
   const { api, prefix, bus } = options;
@@ -21,28 +29,40 @@ const http = async (server, options) => {
       const routeOptions =
         'handler' in route
           ? getRouteOptionsFromRaw(route, fullUrl, bus)
-          : await getRouteOptions(route, service, fullUrl, server, bus);
+          : getRouteOptions(route, fullUrl, bus, server);
 
       if (!routeOptions) continue;
 
       server.route(routeOptions);
     }
   }
+
+  const defaultErrorHandler = server.errorHandler;
+  server.setErrorHandler((error, req, res) => {
+    if (error instanceof SystemError) {
+      const [code, message, logLevel] = error.expected
+        ? [400, error.message, 'warn']
+        : [500, 'Internal server error', 'error'];
+
+      server.log[logLevel]({ url: error.url }, `Server error`);
+      return res.code(code).send({ message });
+    } else return defaultErrorHandler(error, req, res);
+  });
 };
 
 /** @type PluginFuncs['getRouteOptions'] */
-const getRouteOptions = async (route, service, url, server, bus) => {
+const getRouteOptions = (route, url, bus, server) => {
   const { method, inputSource, command } = route;
 
-  const validationSchema = await bus.getSchema(command.service, command.method);
+  const validationSchema = bus.getSchema(command.service, command.method);
   if (!validationSchema) {
-    server.log.error(`Missing schema for ${url}. Ignoring route`);
+    server.log.warn(`Missing schema for ${url}. Ignoring route`);
     return null;
   }
 
   const { auth, input, output } = validationSchema;
   const schema = generateSchema({
-    service,
+    service: command.service,
     inputSource,
     ...validationSchema,
   });
@@ -61,14 +81,7 @@ const getRouteOptions = async (route, service, url, server, bus) => {
 
       const [err, result] = await bus.call(command, payload);
 
-      if (err) {
-        const [code, message, logLevel] = err.expected
-          ? [400, err.message, 'warn']
-          : [500, 'Internal server error', 'error'];
-
-        server.log[logLevel]({ url, err }, `${service} error`);
-        return res.code(code).send({ message });
-      }
+      if (err) throw new SystemError({ ...err, url });
 
       const [code, response] = output ? [200, result] : [204, null];
       return res.code(code).send(response);

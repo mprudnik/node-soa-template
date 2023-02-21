@@ -29,7 +29,7 @@ export class LocalBus {
   async teardown() {}
 
   /** @type IBus['getSchema'] */
-  getSchema = async (service, method) => {
+  getSchema = (service, method) => {
     const key = `${service}:${method}`;
     return this.#schemas.get(key);
   };
