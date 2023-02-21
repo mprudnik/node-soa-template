@@ -23,17 +23,13 @@ export const init = async (infra, api, options) => {
   await server.register(swagger, options.swagger);
   await server.register(customAuth, {
     verifyToken: async (token, definition) => {
-      const [error, result] = await bus.call(
+      const [error, session] = await bus.call(
         { service: 'auth', method: 'verify' },
-        { meta: {}, data: { token, definition } },
+        { data: { token, definition } },
       );
-      if (error) {
-        if (error.expected)
-          return { valid: false, access: false, message: error.message };
-      }
+      if (error) return { valid: false, access: false, message: error.message };
 
-      // TODO - remove conversion to any after adding call type inference
-      return /** @type {any} */ (result);
+      return { valid: true, access: true, session };
     },
   });
 
