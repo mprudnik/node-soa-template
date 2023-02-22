@@ -16,6 +16,7 @@ describe('app', () => {
       ...defaultConfig,
       server: { ...defaultConfig.server, enabledApi: { http: true, ws: true } },
       services: { enabledServices: 'all' },
+      infra: { ...defaultConfig.infra, bus: { type: 'local' } },
     });
     const { statusCode } = await app.inject({ method: 'GET', url: '/' });
     assert.equal(statusCode, 200);
@@ -27,6 +28,17 @@ describe('app', () => {
       ...defaultConfig,
       server: { ...defaultConfig.server, enabledApi: { http: true, ws: true } },
       services: { enabledServices: [] },
+      infra: {
+        ...defaultConfig.infra,
+        bus: {
+          type: 'distributed',
+          serverId: 'test',
+          readInterval: 100,
+          callTimeout: 500,
+          maxCallStreamSize: 100,
+          maxEventStreamSize: 100,
+        },
+      },
     });
     const { statusCode } = await app.inject({ method: 'GET', url: '/' });
     assert.equal(statusCode, 200);
