@@ -41,14 +41,15 @@ const auth = async (fastify, options) => {
         if (strategy !== 'Bearer' || !token)
           throw new AuthError(401, 'Invalid header');
 
-        const { valid, access, message, session } = await verifyToken(
-          token,
-          definition,
-        );
-        if (!valid) throw new AuthError(401, message);
-        if (!access) throw new AuthError(403, message);
+        const result = await verifyToken(token, definition);
+        if (!('session' in result)) {
+          const { valid, access, message } = result;
+          if (!valid) throw new AuthError(401, message);
+          if (!access) throw new AuthError(403, message);
+          return;
+        }
 
-        req.session = session;
+        req.session = result.session;
       },
     ]);
 

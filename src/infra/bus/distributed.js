@@ -29,7 +29,7 @@ export class DistributedBus {
 
   #eventsGroupName = 'events';
   #schemasKey = 'internal:schemas';
- 
+
   #proxyMethods = ['call', 'publish'];
 
   /** @type Init */
