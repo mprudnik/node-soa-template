@@ -49,17 +49,13 @@ export const init = async (infra, api, options) => {
     });
   }
 
-  const { host, port, env, healthCheckUrl } = options;
-
-  server.get(healthCheckUrl, async (_req, res) => {
+  server.get(options.healthCheckUrl, async (_req, res) => {
     const dbHealthy = await db.$queryRaw`SELECT 1`.catch(() => false);
 
     const allGood = dbHealthy;
 
     return res.code(allGood ? 200 : 503).send('OK');
   });
-
-  if (env !== 'test') await server.listen({ host, port });
 
   return server;
 };

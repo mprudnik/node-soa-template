@@ -12,9 +12,14 @@ export const start = async (conf = config) => {
 
   await initServices(infra, config.services);
 
+  const server = await initServer(infra, api, conf.server);
+
   await infra.bus.listen();
 
-  const server = await initServer(infra, api, conf.server);
+  if (config.env !== 'test') {
+    const { host, port } = config.server;
+    await server.listen({ host, port });
+  }
 
   return {
     app: server,

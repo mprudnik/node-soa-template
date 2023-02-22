@@ -31,7 +31,6 @@ export interface ServerConfig {
     ws: boolean;
   };
   healthCheckUrl: string;
-  env: string;
   cors: FastifyCorsOptions;
   auth: FastifyAuthPluginOptions;
   swagger: SwaggerPluginOptions;
