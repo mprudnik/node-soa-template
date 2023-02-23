@@ -45,6 +45,7 @@ export interface Bus extends Command, PubSub {
     method: string,
     schema: ValidationSchema,
   ): Promise<void>;
+  prefetchSchemas(): Promise<void>;
   withMeta(meta: object): Bus;
 }
 

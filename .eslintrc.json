@@ -15,6 +15,7 @@
   "rules": {
     "strict": "off",
     "no-use-before-define": "off",
+    "no-console": "error",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]

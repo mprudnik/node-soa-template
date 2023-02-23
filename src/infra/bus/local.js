@@ -40,6 +40,10 @@ export class LocalBus {
     this.#schemas.set(key, schema);
   };
 
+  /** @type IBus['prefetchSchemas'] */
+  // eslint-disable-next-line @typescript-eslint/no-empty-function, class-methods-use-this
+  async prefetchSchemas() {}
+
   /** @type ICommand['call'] */
   call = async ({ service: serviceName, method }, { meta = {}, data }) => {
     const service = this.#services.get(serviceName);

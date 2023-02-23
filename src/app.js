@@ -10,19 +10,21 @@ import {
 export const start = async (conf = config) => {
   const infra = await initInfra(conf.infra);
 
-  await initServices(infra, config.services);
+  await initServices(infra, conf.services);
 
+  await infra.bus.prefetchSchemas();
   const server = await initServer(infra, api, conf.server);
 
   await infra.bus.listen();
 
-  if (config.env !== 'test') {
-    const { host, port } = config.server;
+  if (conf.env !== 'test') {
+    const { host, port } = conf.server;
     await server.listen({ host, port });
   }
 
   return {
     app: server,
+    infra,
     teardown: async () => {
       infra.logger.info('Starting graceful shutdown');
       await teardownServer(infra, server);

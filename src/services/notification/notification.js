@@ -3,20 +3,20 @@ import { ServiceError } from '../error.js';
 
 const initialisedUsers = new Map();
 
-/** @type EventHandlers['ws.connection.open'] */
+/** @type EventHandlers['ws:connection:open'] */
 const wsConnectionOpen = async (_i, { meta, data }) => {
   const { serverId, wsId } = meta;
   const { userId } = data;
   initialisedUsers.set(userId, { serverId, wsId });
 };
 
-/** @type EventHandlers['ws.connection.close'] */
+/** @type EventHandlers['ws:connection:close'] */
 const wsConnectionClose = async (_i, { data }) => {
   const { userId } = data;
   initialisedUsers.delete(userId);
 };
 
-/** @type EventHandlers['account.transfer'] */
+/** @type EventHandlers['account:transfer'] */
 const accountTransfer = async (infra, { data }) => {
   const { db, bus } = infra;
   const { fromId, toId, amount, state } = data;
@@ -37,7 +37,7 @@ const accountTransfer = async (infra, { data }) => {
   if (senderMeta) {
     const { serverId, wsId } = senderMeta;
     const fullName = `${receiver.owner.firstName} ${receiver.owner.lastName}`;
-    bus.publish(`ws.message.${serverId}`, {
+    await bus.publish(`ws:message:${serverId}`, {
       meta: { wsId },
       data: { message: `Successfully sent ${amount}$ to ${fullName}` },
     });
@@ -47,7 +47,7 @@ const accountTransfer = async (infra, { data }) => {
   if (receiverMeta) {
     const { serverId, wsId } = receiverMeta;
     const fullName = `${sender.owner.firstName} ${sender.owner.lastName}`;
-    bus.publish(`ws.message.${serverId}`, {
+    await bus.publish(`ws:message:${serverId}`, {
       meta: { wsId },
       data: {
         message: `Successfully received ${amount}$ from ${fullName}`,
@@ -58,7 +58,7 @@ const accountTransfer = async (infra, { data }) => {
 
 /** @type EventHandlers */
 export const eventHandlers = {
-  'ws.connection.open': wsConnectionOpen,
-  'ws.connection.close': wsConnectionClose,
-  'account.transfer': accountTransfer,
+  'ws:connection:open': wsConnectionOpen,
+  'ws:connection:close': wsConnectionClose,
+  'account:transfer': accountTransfer,
 };

@@ -1,10 +1,12 @@
 /** @typedef {import('./types').Config['server']} Server */
+import { getServerId } from './util.js';
 
 const host = process.env.HOST ?? '0.0.0.0';
 const port = parseInt(process.env.PORT ?? '8000');
 
 /** @type Server */
 export default {
+  serverId: getServerId(),
   host,
   port,
   enabledApi: { http: true, ws: true },

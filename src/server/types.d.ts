@@ -24,6 +24,7 @@ export type API = {
 };
 
 export interface ServerConfig {
+  serverId: string;
   host: string;
   port: number;
   enabledApi: {

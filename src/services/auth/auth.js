@@ -32,7 +32,7 @@ const signUp = {
     const token = crypto.random();
     await db.session.create({ data: { userId, token } });
 
-    bus.publish('auth.signUp', { meta: {}, data: { email } });
+    await bus.publish('auth:signUp', { meta: {}, data: { email } });
 
     return { userId, token };
   },
