@@ -1,4 +1,4 @@
-# Node.js template for (Service-oriented architecture)[https://en.wikipedia.org/wiki/Service-oriented_architecture]
+# Node.js template for [Service-oriented architecture](https://en.wikipedia.org/wiki/Service-oriented_architecture)
 
 ## Components
 
