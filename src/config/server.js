@@ -19,8 +19,8 @@ export default {
   },
   auth: {},
   swagger: {
-    title: 'Supelle API',
-    description: 'API docs for Supelle project',
+    title: '{PROJECT} API',
+    description: 'API docs for {PROJECT} project',
     version: '1.0',
     serverUrl: process.env.SERVER_URL ?? `http://${host}:${port}`,
     routePrefix: '/docs',
