@@ -21,5 +21,4 @@ export const compare = (password, hash) =>
     });
   });
 
-export const random = (length = 36) =>
-  crypto.randomBytes(length).toString('base64');
+export const random = () => crypto.randomUUID();

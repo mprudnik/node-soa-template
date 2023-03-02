@@ -10,4 +10,11 @@ export const requiredEnv = (name) => {
 /** @type {"development" | "production" | "test"} */
 // @ts-ignore
 export const nodeEnv = process.env.NODE_ENV ?? 'development';
-export const serverId = randomUUID();
+
+/** @type {string} */
+let serverId;
+export const getServerId = () => {
+  if (!serverId) serverId = randomUUID();
+
+  return serverId;
+};

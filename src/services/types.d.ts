@@ -1,7 +1,12 @@
 import type { Infra } from '../infra/types';
 
-export interface WrappedInfra extends Omit<Infra, 'bus'> {
+export interface ServicesConfig {
+  enabledServices: 'all' | string[];
+}
+
+export interface WrappedInfra extends Omit<Infra, 'bus' | 'logger'> {
   bus: Pick<Infra['bus'], 'call' | 'publish'>;
+  logger: Omit<Infra['logger'], 'child'>;
 }
 
 export interface DefaultMeta {
@@ -57,7 +62,7 @@ export type WrappedServiceFunction<
 export function wrapServiceFunction<Fn extends ServiceFunction>(
   infra: Infra,
   fn: Fn,
-  options: { logPrefix: string },
+  options: { source: string },
 ): WrappedServiceFunction<Fn>;
 
 export interface ServiceError {
@@ -67,8 +72,7 @@ export interface ServiceError {
 
 export function processServiceError(
   error: any,
-  logger: Infra['logger'],
-  options: { meta: DefaultMeta; logPrefix: string },
+  logger: WrappedInfra['logger'],
 ): ServiceError;
 
 export function initCommands(
@@ -83,4 +87,4 @@ export function initEventHandlers(
   eventHandlers: Record<string, EventHandler>,
 ): void;
 
-export function init(infra: Infra): Promise<void>;
+export function init(infra: Infra, config: ServicesConfig): Promise<void>;

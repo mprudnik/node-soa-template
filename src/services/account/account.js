@@ -13,6 +13,7 @@ import {
 
 /** @type Commands['deposit'] */
 const deposit = {
+  auth: {},
   input: depositInput,
   handler: async (infra, { data: { accountId, amount } }) => {
     const { db, bus } = infra;
@@ -29,12 +30,13 @@ const deposit = {
         typeExternal: 'deposit',
       },
     });
-    bus.publish('account.deposit', { data: { accountId, amount } });
+    await bus.publish('account:deposit', { data: { accountId, amount } });
   },
 };
 
 /** @type Commands['withdraw'] */
 const withdraw = {
+  auth: {},
   input: withdrawInput,
   handler: async (infra, { data: { accountId, amount } }) => {
     const { db, bus } = infra;
@@ -56,12 +58,13 @@ const withdraw = {
         },
       });
     });
-    bus.publish('account.withdraw', { data: { accountId, amount } });
+    await bus.publish('account:withdraw', { data: { accountId, amount } });
   },
 };
 
 /** @type Commands['transfer'] */
 const transfer = {
+  auth: {},
   input: transferInput,
   handler: async (infra, { data: { fromId, toId, amount } }) => {
     const { db, bus } = infra;
@@ -90,8 +93,7 @@ const transfer = {
         },
       });
     });
-    bus.publish('account.transfer', {
-      meta: {},
+    await bus.publish('account:transfer', {
       data: {
         fromId,
         toId,
@@ -107,8 +109,7 @@ const transfer = {
         amount,
       },
     });
-    bus.publish('account.transfer', {
-      meta: {},
+    await bus.publish('account:transfer', {
       data: {
         fromId,
         toId,
@@ -126,8 +127,7 @@ const transfer = {
         typeExternal: 'deposit',
       },
     });
-    bus.publish('account.transfer', {
-      meta: {},
+    await bus.publish('account:transfer', {
       data: {
         fromId,
         toId,
@@ -140,6 +140,7 @@ const transfer = {
 
 /** @type Commands['getBalance'] */
 const getBalance = {
+  auth: {},
   input: getBalanceInput,
   output: getBalanceOutput,
   handler: async (infra, { data: { accountId } }) => {
@@ -150,6 +151,7 @@ const getBalance = {
 
 /** @type Commands['getTransactions'] */
 const getTransactions = {
+  auth: {},
   input: getTransactionsInput,
   output: getTransactionsOutput,
   handler: async (infra, { data: { accountId } }) => {

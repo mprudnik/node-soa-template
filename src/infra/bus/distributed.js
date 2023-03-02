@@ -25,10 +25,11 @@ export class DistributedBus {
   /** @type {Map<string, Promise<any>>} */
   #processing;
   #terminating;
+  #schemas;
 
   #eventsGroupName = 'events';
   #schemasKey = 'internal:schemas';
- 
+
   #proxyMethods = ['call', 'publish'];
 
   /** @type Init */
@@ -46,11 +47,13 @@ export class DistributedBus {
     this.#calls = new Map();
     this.#processing = new Map();
     this.#terminating = false;
+    this.#schemas = new Map();
   }
 
   /** @type IBus['listen'] */
   listen = async () => {
     const { serverId } = this.#options;
+
     const subKey = `response:${serverId}:*`;
     await this.#subClient.connect();
     await this.#subClient.pSubscribe(subKey, this.#handleResponse);
@@ -75,11 +78,9 @@ export class DistributedBus {
   };
 
   /** @type IBus['getSchema'] */
-  getSchema = async (service, method) => {
-    const key = `${service}:${method}`;
-    const strSchema = await this.#redis.hGet(this.#schemasKey, key);
-    if (!strSchema) return undefined;
-    const schema = JSON.parse(strSchema);
+  getSchema = (service, method) => {
+    const schemaKey = `${service}:${method}`;
+    const schema = this.#schemas.get(schemaKey);
     return schema;
   };
 
@@ -88,6 +89,15 @@ export class DistributedBus {
     const key = `${service}:${method}`;
     const strSchema = JSON.stringify(schema);
     await this.#redis.hSet(this.#schemasKey, key, strSchema);
+  };
+
+  /** @type IBus['prefetchSchemas'] */
+  prefetchSchemas = async () => {
+    const schemas = await this.#redis.hGetAll(this.#schemasKey);
+    for (const schemaKey of Object.keys(schemas)) {
+      const schema = JSON.parse(schemas[schemaKey]);
+      this.#schemas.set(schemaKey, schema);
+    }
   };
 
   /** @type ICommand['registerService'] */
@@ -106,7 +116,7 @@ export class DistributedBus {
       TRIM: { strategy: 'MAXLEN', strategyModifier: '~', threshold },
     });
 
-    this.#logger.info({ payload, streamKey }, `Published ${event}`);
+    this.#logger.info({ meta, data, streamKey }, `Published ${event}`);
     return true;
   };
 
@@ -156,14 +166,16 @@ export class DistributedBus {
 
       this.#calls.set(callId, { resolve, timeout });
 
-      setTimeout(callTimeout, null, { signal: timeout.signal }).then(() => {
-        this.#calls.delete(callId);
-        const message = 'Call timeout';
-        /** @type CallResult */
-        const result = [{ expected: false, message }, null];
-        resolve(result);
-        this.#logger.warn({ callId, service, method }, message);
-      });
+      setTimeout(callTimeout, null, { signal: timeout.signal })
+        .then(() => {
+          this.#calls.delete(callId);
+          const message = 'Call timeout';
+          /** @type CallResult */
+          const result = [{ expected: false, message }, null];
+          resolve(result);
+          this.#logger.warn({ callId, service, method }, message);
+        })
+        .catch(() => false);
     });
 
   /** @type {(message: string, channel: string) => void} */
@@ -368,11 +380,16 @@ export class DistributedBus {
 
         const method = target[prop];
 
-        return ({ meta: original, data }) =>
-          method({
+        const handler = (
+          /** @type {any} */ eventOrCommand,
+          { meta: original = {}, data },
+        ) =>
+          method(eventOrCommand, {
             data,
             meta: { ...original, ...meta },
           });
+
+        return handler;
       },
     });
   };

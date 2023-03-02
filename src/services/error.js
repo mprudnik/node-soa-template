@@ -3,13 +3,9 @@
 export class ServiceError extends Error {}
 
 /** @type ServiceFuncs['processServiceError'] */
-export const processServiceError = (error, logger, options) => {
-  const { logPrefix, meta } = options;
+export const processServiceError = (error, logger) => {
   const expected = error instanceof ServiceError;
   const { message, stack } = error;
-  logger[expected ? 'warn' : 'error'](
-    { stack, meta },
-    `[${logPrefix}] ${message}`,
-  );
+  logger[expected ? 'warn' : 'error']({ stack }, message);
   return { message, expected };
 };

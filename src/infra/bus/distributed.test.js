@@ -69,10 +69,11 @@ describe('distributed bus', () => {
     await receiver.listen();
     const { handler, ...schema } = dummyService.commands.echo;
     await caller.setSchema('dummyService', 'echo', schema);
+    await receiver.prefetchSchemas();
 
-    const echoSchema = await receiver.getSchema('dummyService', 'echo');
+    const echoSchema = receiver.getSchema('dummyService', 'echo');
     assert.deepEqual(echoSchema, schema);
-    const missingSchema = await caller.getSchema('dummyService', 'missing');
+    const missingSchema = caller.getSchema('dummyService', 'missing');
     assert.equal(missingSchema, undefined);
   });
 

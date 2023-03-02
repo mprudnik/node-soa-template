@@ -16,7 +16,7 @@ export type CallHandler = ServiceFunction<
 >;
 export type Payload = {
   meta?: Parameters<CallHandler>[0]['meta'];
-  data: Parameters<CallHandler>[0]['meta'];
+  data: Parameters<CallHandler>[0]['data'];
 };
 export type CallResult = Awaited<ReturnType<CallHandler>>;
 
@@ -39,15 +39,13 @@ export interface PubSub {
 export interface Bus extends Command, PubSub {
   listen(): Promise<void>;
   teardown(): Promise<void>;
-  getSchema(
-    service: string,
-    method: string,
-  ): Promise<ValidationSchema | undefined>;
+  getSchema(service: string, method: string): ValidationSchema | undefined;
   setSchema(
     service: string,
     method: string,
     schema: ValidationSchema,
   ): Promise<void>;
+  prefetchSchemas(): Promise<void>;
   withMeta(meta: object): Bus;
 }
 

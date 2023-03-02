@@ -16,40 +16,37 @@ const websocket = async (fastify, options) => {
 
   const wsConnections = new Map();
 
+  /** @type {(payload: { meta?: any, data: any}) => Promise<any>} */
+  const messageHandler = async ({ meta, data }) => {
+    const { wsId } = meta;
+    const socket = wsConnections.get(wsId);
+    if (!socket) return;
+    socket.send(JSON.stringify(data));
+  };
+
+  bus.subscribe(`ws:message:${serverId}`, messageHandler);
+
   fastify.route({
     method: 'GET',
     url: '/ws',
-    websocket: true,
     onRequest: fastify.customAuth({}),
     handler: async () => 'WS only',
     wsHandler: (conn, req) => {
-      const { accountId } = req.session;
+      const { userId } = req.session;
       const wsId = randomUUID();
-
-      /** @type {(payload: { meta?: any, data: any}) => Promise<any>} */
-      const messageHandler = async ({ meta, data }) => {
-        const { wsId } = meta;
-        const socket = wsConnections.get(wsId);
-        if (!socket) return;
-        socket.send(JSON.stringify(data));
-      };
-
-      conn.socket.on('open', () => {
-        wsConnections.set(wsId, conn.socket);
-        bus.subscribe(`ws.message.${serverId}`, messageHandler);
-        bus.publish(`ws.connection.open`, {
-          meta: { serverId, wsId },
-          data: { accountId },
-        });
-      });
 
       conn.socket.on('close', () => {
         wsConnections.delete(wsId);
-        bus.unsubscribe(`ws.message.${serverId}`, messageHandler);
-        bus.publish(`ws.connection.close`, {
+        bus.publish(`ws:connection:close`, {
           meta: { serverId, wsId },
-          data: { accountId },
+          data: { userId },
         });
+      });
+
+      wsConnections.set(wsId, conn.socket);
+      bus.publish(`ws:connection:open`, {
+        meta: { serverId, wsId },
+        data: { userId },
       });
     },
   });

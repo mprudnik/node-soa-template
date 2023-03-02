@@ -29,7 +29,7 @@ export class LocalBus {
   async teardown() {}
 
   /** @type IBus['getSchema'] */
-  getSchema = async (service, method) => {
+  getSchema = (service, method) => {
     const key = `${service}:${method}`;
     return this.#schemas.get(key);
   };
@@ -39,6 +39,10 @@ export class LocalBus {
     const key = `${service}:${method}`;
     this.#schemas.set(key, schema);
   };
+
+  /** @type IBus['prefetchSchemas'] */
+  // eslint-disable-next-line @typescript-eslint/no-empty-function, class-methods-use-this
+  async prefetchSchemas() {}
 
   /** @type ICommand['call'] */
   call = async ({ service: serviceName, method }, { meta = {}, data }) => {

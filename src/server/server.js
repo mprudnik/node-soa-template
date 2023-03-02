@@ -1,6 +1,5 @@
 /** @typedef {import('./types').init} init */
 /** @typedef {import('./types').teardown} teardown */
-import { randomUUID } from 'node:crypto';
 import { fastify } from 'fastify';
 import auth from '@fastify/auth';
 import cors from '@fastify/cors';
@@ -13,8 +12,8 @@ import customWebsocket from './plugins/websocket/websocket.js';
 /** @type init */
 export const init = async (infra, api, options) => {
   const { bus, logger, db } = infra;
+  const { serverId, enabledApi, healthCheckUrl } = options;
 
-  const serverId = randomUUID();
   const server = fastify({ logger });
 
   await server.register(auth, options.auth);
@@ -33,24 +32,20 @@ export const init = async (infra, api, options) => {
     },
   });
 
-  if (api.http) {
+  if (enabledApi.http && api.http) {
     await server.register(customHttp, {
       api: api.http,
       prefix: '/api',
-      getSchema: bus.getSchema,
-      executeCommand: (command, payload, meta) =>
-        bus.call(command, { meta, data: payload }),
+      bus,
     });
   }
 
-  if (api.ws) {
+  if (enabledApi.ws) {
     await server.register(customWebsocket, {
       serverId,
       bus,
     });
   }
-
-  const { host, port, env, healthCheckUrl } = options;
 
   server.get(healthCheckUrl, async (_req, res) => {
     const dbHealthy = await db.$queryRaw`SELECT 1`.catch(() => false);
@@ -59,8 +54,6 @@ export const init = async (infra, api, options) => {
 
     return res.code(allGood ? 200 : 503).send('OK');
   });
-
-  if (env !== 'test') await server.listen({ host, port });
 
   return server;
 };

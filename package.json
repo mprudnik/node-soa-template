@@ -8,7 +8,7 @@
     "lint": "eslint . && tsc --project .",
     "start": "node src/main.js",
     "build": "prisma generate && node ./prisma/sanitise.js",
-    "test": "tap --no-coverage"
+    "test": "NODE_ENV=test tap --no-coverage"
   },
   "repository": {
     "type": "git",

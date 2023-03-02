@@ -24,7 +24,7 @@ export type AccountTransfer = EventHandler<{
 }>;
 
 export interface NotificationEventHandlers {
-  'ws.connection.open': WSConnectionOpen;
-  'ws.connection.close': WSConnectionClose;
-  'account.transfer': AccountTransfer;
+  'ws:connection:open': WSConnectionOpen;
+  'ws:connection:close': WSConnectionClose;
+  'account:transfer': AccountTransfer;
 }
