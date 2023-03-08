@@ -1,7 +1,7 @@
 {
-  "name": "node-soa",
+  "name": "node-soa-template",
   "version": "0.0.0",
-  "description": "Node js SOA example",
+  "description": "Node js SOA template",
   "type": "module",
   "main": "src/main.js",
   "scripts": {
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/georgolden/node-soa.git"
+    "url": "git+https://github.com/mprudnik/node-soa-template.git"
   },
-  "author": "Georg Oldenburger",
+  "author": "Maksym Prudnik",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/georgolden/node-soa/issues"
+    "url": "https://github.com/mprudnik/node-soa-template/issues"
   },
-  "homepage": "https://github.com/georgolden/node-soa#readme",
+  "homepage": "https://github.com/mprudnik/node-soa-template#readme",
   "engines": {
     "node": "18"
   },
@@ -48,7 +48,6 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
     "json-schema-to-ts": "^2.6.2",
-    "metatests": "^0.8.2",
     "pino-pretty": "^9.1.1",
     "prettier": "^2.7.1",
     "prisma": "^4.10.1",
