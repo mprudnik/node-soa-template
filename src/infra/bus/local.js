@@ -94,11 +94,16 @@ export class LocalBus {
 
         const method = target[prop];
 
-        return ({ meta: original, data }) =>
-          method({
+        const handler = (
+          /** @type {any} */ eventOrCommand,
+          { meta: original = {}, data },
+        ) =>
+          method(eventOrCommand, {
             data,
             meta: { ...original, ...meta },
           });
+
+        return handler;
       },
     });
   };
