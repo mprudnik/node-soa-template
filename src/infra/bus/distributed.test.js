@@ -6,10 +6,7 @@ import assert from 'node:assert';
 import { setTimeout } from 'node:timers/promises';
 import { randomUUID } from 'node:crypto';
 import { init as initLogger } from '../logger/logger.js';
-import {
-  init as initRedis,
-  teardown as teardownRedis,
-} from '../redis/redis.js';
+import { init as initRedis, teardown as teardownRedis } from '../redis/redis.js';
 import { DistributedBus } from './distributed.js';
 
 describe('distributed bus', () => {
@@ -46,14 +43,8 @@ describe('distributed bus', () => {
     const receiverId = randomUUID();
     logger.debug({ callerId, receiverId }, 'Bus instances ids');
 
-    caller = new DistributedBus(
-      { logger, redis },
-      { ...commonOptions, serverId: callerId },
-    );
-    receiver = new DistributedBus(
-      { logger, redis },
-      { ...commonOptions, serverId: receiverId },
-    );
+    caller = new DistributedBus({ logger, redis }, { ...commonOptions, serverId: callerId });
+    receiver = new DistributedBus({ logger, redis }, { ...commonOptions, serverId: receiverId });
     const { handler } = dummyService.commands.echo;
     receiver.registerService('dummy', { echo: handler });
     await caller.listen();
@@ -81,10 +72,7 @@ describe('distributed bus', () => {
     await receiver.listen();
     const payload = { meta: {}, data: { test: 'test' } };
 
-    const [error, result] = await caller.call(
-      { service: 'dummy', method: 'echo' },
-      payload,
-    );
+    const [error, result] = await caller.call({ service: 'dummy', method: 'echo' }, payload);
     assert.equal(error, null);
     assert.ok('operationId' in /** @type any */ (result).meta);
     assert.deepEqual(result, payload);

@@ -73,9 +73,7 @@ const getRouteOptions = (route, url, bus, server) => {
     url,
     schema,
     handler: async (req, res) => {
-      const { operationId, ...data } = /** @type any */ (
-        input ? req[inputSource] : {}
-      );
+      const { operationId, ...data } = /** @type any */ (input ? req[inputSource] : {});
       const { session } = req;
       const payload = { meta: { ...session, operationId }, data };
 

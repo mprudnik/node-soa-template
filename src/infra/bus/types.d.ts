@@ -8,12 +8,8 @@ import type {
   WrappedServiceFunction as ServiceFunction,
 } from '../../services/types';
 
-export type EventHandler = ServiceFunction<
-  RawEventHandler<{ Meta: Partial<DefaultMeta> }>
->;
-export type CallHandler = ServiceFunction<
-  RawCall<{ Meta: Partial<DefaultMeta> }>['handler']
->;
+export type EventHandler = ServiceFunction<RawEventHandler<{ Meta: Partial<DefaultMeta> }>>;
+export type CallHandler = ServiceFunction<RawCall<{ Meta: Partial<DefaultMeta> }>['handler']>;
 export type Payload = {
   meta?: Parameters<CallHandler>[0]['meta'];
   data: Parameters<CallHandler>[0]['data'];
@@ -23,10 +19,7 @@ export type CallResult = Awaited<ReturnType<CallHandler>>;
 export type CallData = { serverId: string; callId: string; payload: string };
 
 export interface Command {
-  call(
-    command: { service: string; method: string },
-    payload: Payload,
-  ): Promise<CallResult>;
+  call(command: { service: string; method: string }, payload: Payload): Promise<CallResult>;
   registerService(name: string, service: Record<string, CallHandler>): void;
 }
 
@@ -40,11 +33,7 @@ export interface Bus extends Command, PubSub {
   listen(): Promise<void>;
   teardown(): Promise<void>;
   getSchema(service: string, method: string): ValidationSchema | undefined;
-  setSchema(
-    service: string,
-    method: string,
-    schema: ValidationSchema,
-  ): Promise<void>;
+  setSchema(service: string, method: string, schema: ValidationSchema): Promise<void>;
   prefetchSchemas(): Promise<void>;
   withMeta(meta: object): Bus;
 }

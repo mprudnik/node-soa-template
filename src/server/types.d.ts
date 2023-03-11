@@ -11,8 +11,7 @@ export interface HTTPRoute extends Pick<RouteOptions, 'method' | 'url'> {
   command: { service: string; method: string };
 }
 
-export interface HTTPRouteRaw
-  extends Pick<RouteOptions, 'method' | 'url' | 'schema'> {
+export interface HTTPRouteRaw extends Pick<RouteOptions, 'method' | 'url' | 'schema'> {
   preValidation?: (bus: Bus) => RouteOptions['preValidation'];
   handler: (bus: Bus) => RouteOptions['handler'];
 }
@@ -37,9 +36,5 @@ export interface ServerConfig {
   swagger: SwaggerPluginOptions;
 }
 
-export function init(
-  infra: Infra,
-  api: API,
-  config: ServerConfig,
-): Promise<Server>;
+export function init(infra: Infra, api: API, config: ServerConfig): Promise<Server>;
 export function teardown(infra: Infra, server: Server): Promise<void>;

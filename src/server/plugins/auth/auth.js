@@ -33,13 +33,11 @@ const auth = async (fastify, options) => {
       async (req) => {
         const { authorization } = req.headers;
 
-        if (!authorization)
-          throw new AuthError(401, 'Missing authorization header');
+        if (!authorization) throw new AuthError(401, 'Missing authorization header');
 
         const [strategy, token] = authorization.split(' ');
 
-        if (strategy !== 'Bearer' || !token)
-          throw new AuthError(401, 'Invalid header');
+        if (strategy !== 'Bearer' || !token) throw new AuthError(401, 'Invalid header');
 
         const result = await verifyToken(token, definition);
         if (!('session' in result)) {

@@ -53,9 +53,7 @@ export type Service = {
 export type ServiceFunction =
   | Command<{ Meta: DefaultMeta }>['handler']
   | EventHandler<{ Meta: DefaultMeta }>;
-export type WrappedServiceFunction<
-  Fn extends ServiceFunction = ServiceFunction,
-> = (
+export type WrappedServiceFunction<Fn extends ServiceFunction = ServiceFunction> = (
   payload: Parameters<Fn>[1],
 ) => Promise<[ServiceError, null] | [null, unknown | void]>;
 
@@ -70,10 +68,7 @@ export interface ServiceError {
   expected: boolean;
 }
 
-export function processServiceError(
-  error: any,
-  logger: WrappedInfra['logger'],
-): ServiceError;
+export function processServiceError(error: any, logger: WrappedInfra['logger']): ServiceError;
 
 export function initCommands(
   infra: Infra,

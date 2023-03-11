@@ -59,19 +59,13 @@ export const hash = (password) =>
 export const compare = (password, serHash) => {
   const { params, salt, hash } = deserializeHash(serHash);
   return new Promise((resolve, reject) => {
-    crypto.scrypt(
-      password,
-      salt,
-      hash.length,
-      params,
-      (err, hashedPassword) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(crypto.timingSafeEqual(hashedPassword, hash));
-      },
-    );
+    crypto.scrypt(password, salt, hash.length, params, (err, hashedPassword) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(crypto.timingSafeEqual(hashedPassword, hash));
+    });
   });
 };
 

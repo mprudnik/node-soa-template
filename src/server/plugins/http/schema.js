@@ -2,13 +2,7 @@
 /** @typedef {import('./types').generateSchema} generateSchema */
 
 /** @type generateSchema */
-export const generateSchema = ({
-  service,
-  inputSource,
-  input,
-  output,
-  auth,
-}) => {
+export const generateSchema = ({ service, inputSource, input, output, auth }) => {
   /** @type any */
   const routeSchema = {
     tags: [service.toUpperCase()],

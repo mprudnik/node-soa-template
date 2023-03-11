@@ -190,9 +190,7 @@ const getAccountBalance = async (db, accountId) => {
   });
   const debit = debitSum.amount ?? 0;
   const credit = creditSum.amount ?? 0;
-  const balance = statement
-    ? statement.balance + (debit - credit)
-    : debit - credit;
+  const balance = statement ? statement.balance + (debit - credit) : debit - credit;
   return balance;
 };
 

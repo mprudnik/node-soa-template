@@ -94,10 +94,7 @@ export class LocalBus {
 
         const method = target[prop];
 
-        const handler = (
-          /** @type {any} */ eventOrCommand,
-          { meta: original = {}, data },
-        ) =>
+        const handler = (/** @type {any} */ eventOrCommand, { meta: original = {}, data }) =>
           method(eventOrCommand, {
             data,
             meta: { ...original, ...meta },

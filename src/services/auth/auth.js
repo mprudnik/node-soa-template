@@ -65,9 +65,7 @@ const signOut = {
   handler: async (infra, { data: { token } }) => {
     const { db } = infra;
 
-    const exists = await db.session
-      .delete({ where: { token } })
-      .catch(() => false);
+    const exists = await db.session.delete({ where: { token } }).catch(() => false);
     if (!exists) throw new ServiceError('Not found');
   },
 };

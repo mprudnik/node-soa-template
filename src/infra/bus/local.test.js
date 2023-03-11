@@ -30,10 +30,7 @@ describe('local bus', () => {
   it('handles commands', async () => {
     const payload = { meta: {}, data: { test: 'test' } };
 
-    const [error, result] = await bus.call(
-      { service: 'dummy', method: 'echo' },
-      payload,
-    );
+    const [error, result] = await bus.call({ service: 'dummy', method: 'echo' }, payload);
     assert.equal(error, null);
     assert.ok('operationId' in /** @type any */ (result).meta);
     assert.deepStrictEqual(result, payload);
@@ -42,18 +39,12 @@ describe('local bus', () => {
   it('handles missing service/commands', async () => {
     const payload = { meta: {}, data: { test: 'test' } };
 
-    const [missingServiceError] = await bus.call(
-      { service: 'service', method: 'method' },
-      payload,
-    );
+    const [missingServiceError] = await bus.call({ service: 'service', method: 'method' }, payload);
     assert.deepEqual(missingServiceError, {
       expected: false,
       message: 'Service not found',
     });
-    const [missingHandlerError] = await bus.call(
-      { service: 'dummy', method: 'method' },
-      payload,
-    );
+    const [missingHandlerError] = await bus.call({ service: 'dummy', method: 'method' }, payload);
     assert.deepEqual(missingHandlerError, {
       expected: false,
       message: 'Method not found',

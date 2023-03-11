@@ -1,10 +1,6 @@
 import type { Command } from '../types';
 import type { FromSchema } from 'json-schema-to-ts';
-import type {
-  Prisma,
-  PrismaClient,
-  Account as AccountModel,
-} from '@prisma/client';
+import type { Prisma, PrismaClient, Account as AccountModel } from '@prisma/client';
 import {
   depositInput,
   withdrawInput,

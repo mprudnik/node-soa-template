@@ -1,10 +1,7 @@
 /** @typedef {import('../../infra/types').Infra} Infra */
 import { describe, it, before, after, afterEach } from 'node:test';
 import assert from 'node:assert';
-import {
-  init as initInfra,
-  teardown as teardownInfra,
-} from '../../infra/infra.js';
+import { init as initInfra, teardown as teardownInfra } from '../../infra/infra.js';
 import * as account from './account.js';
 
 describe('account', () => {
@@ -142,25 +139,19 @@ describe('account', () => {
     });
     assert.equal(currentBalance1.balance, account1.initialBalance - amount);
     assert.equal(currentBalance2.balance, account2.initialBalance + amount);
-    const transactions1 = await account.commands.getTransactions.handler(
-      infra,
-      {
-        meta: null,
-        data: { accountId: account1.id },
-      },
-    );
+    const transactions1 = await account.commands.getTransactions.handler(infra, {
+      meta: null,
+      data: { accountId: account1.id },
+    });
     assert.equal(transactions1.length, 1);
     const tx1 = transactions1[0];
     assert.equal(tx1.amount, amount);
     assert.equal(tx1.accountId, account1.id);
     assert.equal(tx1.type, 'withdrawal');
-    const transactions2 = await account.commands.getTransactions.handler(
-      infra,
-      {
-        meta: null,
-        data: { accountId: account2.id },
-      },
-    );
+    const transactions2 = await account.commands.getTransactions.handler(infra, {
+      meta: null,
+      data: { accountId: account2.id },
+    });
     assert.equal(transactions2.length, 1);
     const tx2 = transactions2[0];
     assert.equal(tx2.amount, amount);

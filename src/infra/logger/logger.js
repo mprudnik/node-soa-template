@@ -28,8 +28,7 @@ const options = {
     formatters: {
       level(label, number) {
         return {
-          severity:
-            PinoLevelToSeverityLookup[label] || PinoLevelToSeverityLookup.info,
+          severity: PinoLevelToSeverityLookup[label] || PinoLevelToSeverityLookup.info,
           level: number,
         };
       },

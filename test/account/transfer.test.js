@@ -126,13 +126,9 @@ describe('account/transfer', () => {
       headers: { Authorization: `Bearer ${recvSession.token}` },
     });
     const sendMessages = [];
-    sendSocket.on('message', (msg) =>
-      sendMessages.push(JSON.parse(msg.toString())),
-    );
+    sendSocket.on('message', (msg) => sendMessages.push(JSON.parse(msg.toString())));
     const recvMessages = [];
-    recvSocket.on('message', (msg) =>
-      recvMessages.push(JSON.parse(msg.toString())),
-    );
+    recvSocket.on('message', (msg) => recvMessages.push(JSON.parse(msg.toString())));
 
     await setTimeout(100);
 

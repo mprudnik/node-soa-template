@@ -1,9 +1,4 @@
-import type {
-  FastifyInstance,
-  FastifyPluginAsync,
-  FastifySchema,
-  RouteOptions,
-} from 'fastify';
+import type { FastifyInstance, FastifyPluginAsync, FastifySchema, RouteOptions } from 'fastify';
 import type { API, HTTPRoute, HTTPRouteRaw, Bus } from '../../types';
 import type { ValidationSchema } from '../../../services/types';
 
@@ -13,9 +8,7 @@ export interface HttpPluginOptions {
   bus: Bus;
 }
 
-export interface SchemaOptions
-  extends ValidationSchema,
-    Pick<HTTPRoute, 'inputSource'> {
+export interface SchemaOptions extends ValidationSchema, Pick<HTTPRoute, 'inputSource'> {
   service: string;
 }
 

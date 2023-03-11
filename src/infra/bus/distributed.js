@@ -150,10 +150,7 @@ export class DistributedBus {
       TRIM: { strategy: 'MAXLEN', strategyModifier: '~', threshold },
     });
 
-    this.#logger.info(
-      { callId, streamKey },
-      `Calling ${serviceName}/${method}`,
-    );
+    this.#logger.info({ callId, streamKey }, `Calling ${serviceName}/${method}`);
 
     return this.#promisifyCall(serviceName, method, callId);
   };
@@ -254,12 +251,7 @@ export class DistributedBus {
     const redis = this.#redis.duplicate();
     await redis.connect();
     do {
-      await this.#processGroupStreams(
-        redis,
-        serviceName,
-        streams,
-        this.#handleRemoteCall,
-      );
+      await this.#processGroupStreams(redis, serviceName, streams, this.#handleRemoteCall);
     } while (!this.#terminating);
     await redis.quit();
   };
@@ -272,10 +264,7 @@ export class DistributedBus {
     const [service, method] = streamName.split(':');
     const payload = JSON.parse(strPayload);
 
-    this.#logger.info(
-      { remoteServerId, callId, payload },
-      `Received call - ${service}/${method}`,
-    );
+    this.#logger.info({ remoteServerId, callId, payload }, `Received call - ${service}/${method}`);
 
     const result = await this.#localCall({ service, method }, payload);
 
@@ -283,10 +272,7 @@ export class DistributedBus {
     const subKey = `response:${remoteServerId}:${callId}`;
     await this.#redis.publish(subKey, message);
 
-    this.#logger.info(
-      { callId, result, subKey },
-      `Replied - ${service}/${method}`,
-    );
+    this.#logger.info({ callId, result, subKey }, `Replied - ${service}/${method}`);
   };
 
   /** @type ICommand['call'] */
@@ -335,10 +321,7 @@ export class DistributedBus {
 
     const handler = this.#eventHandlers.get(eventName);
     if (!handler) {
-      this.#logger.warn(
-        { streamName, payload, eventName },
-        'Missing event handler',
-      );
+      this.#logger.warn({ streamName, payload, eventName }, 'Missing event handler');
       return;
     }
 
@@ -380,10 +363,7 @@ export class DistributedBus {
 
         const method = target[prop];
 
-        const handler = (
-          /** @type {any} */ eventOrCommand,
-          { meta: original = {}, data },
-        ) =>
+        const handler = (/** @type {any} */ eventOrCommand, { meta: original = {}, data }) =>
           method(eventOrCommand, {
             data,
             meta: { ...original, ...meta },
