@@ -29,7 +29,7 @@ const signUp = {
       data: { email, passwordHash, ...rest },
     });
 
-    const token = crypto.random();
+    const token = crypto.randomUUID();
     await db.session.create({ data: { userId, token } });
 
     await bus.publish('auth:signUp', { meta: {}, data: { email } });
@@ -52,7 +52,7 @@ const signIn = {
     if (!valid) throw new ServiceError('Invalid credentials');
 
     const { id: userId } = user;
-    const token = crypto.random();
+    const token = crypto.randomUUID();
     await db.session.create({ data: { userId, token } });
 
     return { userId, token };
@@ -82,7 +82,7 @@ const refresh = {
     const session = await db.session.findUnique({ where: { token } });
     if (!session) throw new ServiceError('Not found');
 
-    const newToken = crypto.random();
+    const newToken = crypto.randomUUID();
     await db.session.update({
       where: { id: session.id },
       data: { token: newToken },

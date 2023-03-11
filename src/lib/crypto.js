@@ -24,5 +24,5 @@ export const compare = (password, hash) =>
     });
   });
 
-/** @type Crypto['random'] */
-export const random = () => crypto.randomUUID();
+/** @type Crypto['randomUUID'] */
+export const randomUUID = () => crypto.randomUUID();
