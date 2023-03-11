@@ -1,6 +1,6 @@
 /** @typedef {import('../types').API['http']} API */
-import auth from './auth.js';
-import account from './account.js';
+import * as auth from './auth.js';
+import * as account from './account.js';
 
 /** @type API */
 export const http = { auth, account };

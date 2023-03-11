@@ -23,7 +23,7 @@ const http = async (server, options) => {
   const { api, prefix, bus } = options;
 
   for (const [service, routes] of Object.entries(api)) {
-    for (const route of routes) {
+    for (const route of Object.values(routes)) {
       const fullUrl = `${prefix}/${service}${route.url}`;
 
       const routeOptions =

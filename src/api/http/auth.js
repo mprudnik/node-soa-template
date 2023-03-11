@@ -1,7 +1,7 @@
 /** @typedef {import('../types').HTTPRoute} HttpRoute */
 
 /** @type HttpRoute */
-const signUp = {
+export const signUp = {
   method: 'POST',
   url: '/sign-up',
   inputSource: 'body',
@@ -9,7 +9,7 @@ const signUp = {
 };
 
 /** @type HttpRoute */
-const signIn = {
+export const signIn = {
   method: 'POST',
   url: '/sign-in',
   inputSource: 'body',
@@ -17,7 +17,7 @@ const signIn = {
 };
 
 /** @type HttpRoute */
-const signOut = {
+export const signOut = {
   method: 'POST',
   url: '/sign-out',
   inputSource: 'body',
@@ -25,11 +25,9 @@ const signOut = {
 };
 
 /** @type HttpRoute */
-const refresh = {
+export const refresh = {
   method: 'POST',
   url: '/refresh',
   inputSource: 'body',
   command: { service: 'auth', method: 'refresh' },
 };
-
-export default [signUp, signIn, signOut, refresh];

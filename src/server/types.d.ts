@@ -19,7 +19,7 @@ export interface HTTPRouteRaw
 
 export type Server = FastifyInstance;
 export type API = {
-  http?: Record<string, (HTTPRoute | HTTPRouteRaw)[]>;
+  http?: Record<string, Record<string, HTTPRoute | HTTPRouteRaw>>;
   ws?: any;
 };
 
