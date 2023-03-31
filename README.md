@@ -1,5 +1,7 @@
 # Node.js template for [Service-oriented architecture](https://en.wikipedia.org/wiki/Service-oriented_architecture)
 
+## [Example](https://github.com/mprudnik/node-soa-template/tree/example)
+
 ## Components
 
 Template consist of:
