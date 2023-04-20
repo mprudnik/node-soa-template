@@ -5,10 +5,12 @@
   "type": "module",
   "main": "src/main.js",
   "scripts": {
+    "start": "node ./src/main.js",
+    "dev": "node --watch ./src/main.js",
     "lint": "eslint . && tsc --project .",
-    "start": "node src/main.js",
     "build": "prisma generate && node ./prisma/sanitise.js",
-    "test": "NODE_ENV=test tap --no-coverage"
+    "test": "NODE_ENV=test tap --no-coverage",
+    "db-reset": "npx prisma db push --skip-generate --accept-data-loss --force-reset"
   },
   "repository": {
     "type": "git",
@@ -41,6 +43,7 @@
     "@types/ws": "^8.5.4",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
+    "autocannon": "^7.10.0",
     "eslint": "^8.22.0",
     "eslint-config-metarhia": "^8.1.0",
     "eslint-config-prettier": "^8.5.0",

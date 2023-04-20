@@ -19,7 +19,7 @@ export class DistributedBus {
   #eventHandlers;
   /** @type {Map<
    * string,
-   * { resolve: (result: CallResult) => void, timeout: AbortController }
+   * { resolve: (result: CallResult) => void, timeout: AbortController, time: number }
    * >} */
   #calls;
   /** @type {Map<string, Promise<any>>} */
@@ -161,7 +161,7 @@ export class DistributedBus {
       const { callTimeout } = this.#options;
       const timeout = new AbortController();
 
-      this.#calls.set(callId, { resolve, timeout });
+      this.#calls.set(callId, { resolve, timeout, time: Date.now() });
 
       setTimeout(callTimeout, null, { signal: timeout.signal })
         .then(() => {
@@ -194,6 +194,7 @@ export class DistributedBus {
     /** @type CallResult */
     const result = JSON.parse(message);
     promise.timeout.abort();
+    this.#logger.info({ callId, spentTime: Date.now() - promise.time }, 'Processing time');
     promise.resolve(result);
     this.#calls.delete(callId);
   };

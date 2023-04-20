@@ -1,0 +1,66 @@
+services:
+  # run gateway and services in separate processes
+  apigateway:
+    build: .
+    depends_on:
+      - apiservices
+      - postgres
+      - redis
+    environment:
+      BUS_READ_INTERVAL: 1000
+      BUS_TYPE: distributed
+      DATABASE_URL: postgresql://soa:password@postgres:5432/soa?schema=public
+      ENABLED_SERVICES: ""
+      NODE_ENV: production
+      PORT: 8000
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8000:8000"
+    restart: "no"
+
+  apiservices:
+    build: .
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      BUS_TYPE: distributed
+      DATABASE_URL: postgresql://soa:password@postgres:5432/soa?schema=public
+      ENABLE_HTTP: "false"
+      ENABLE_WS: "false"
+      NODE_ENV: production
+      PORT: 8001
+      REDIS_URL: redis://redis:6379
+    restart: "no"
+
+  # run gateway and services in a single processes
+  # mono:
+  #   build: .
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   environment:
+  #     BUS_TYPE: local
+  #     DATABASE_URL: postgresql://soa:password@postgres:5432/soa?schema=public
+  #     NODE_ENV: production
+  #     PORT: 8000
+  #     REDIS_URL: redis://redis:6379
+  #   ports:
+  #     - "8000:8000"
+  #   restart: "no"
+
+  postgres:
+    environment:
+      POSTGRES_DB: soa
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: soa
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    restart: "no"
+
+  redis:
+    image: "redis/redis-stack-server"
+    ports:
+      - "6379:6379"
+

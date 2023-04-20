@@ -3,13 +3,15 @@ import { getServerId } from './util.js';
 
 const host = process.env.HOST ?? '0.0.0.0';
 const port = parseInt(process.env.PORT ?? '8000');
+const httpEnabled = process.env.ENABLE_HTTP !== 'false';
+const wsEnabled = process.env.ENABLE_WS !== 'false';
 
 /** @type Server */
 export default {
   serverId: getServerId(),
   host,
   port,
-  enabledApi: { http: true, ws: true },
+  enabledApi: { http: httpEnabled, ws: wsEnabled },
   healthCheckUrl: '/',
   cors: {
     origin: '*',
