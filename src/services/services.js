@@ -1,9 +1,10 @@
 /** @typedef {import('./types').Service} Service */
 /** @typedef {import('./types')} ServiceFuncs */
 import { processServiceError } from './error.js';
+import * as test from './test/main.js';
 
 /** @type {Record<string, Service>} */
-const services = {};
+const services = { test };
 
 /** @type ServiceFuncs['init'] */
 export const init = async (infra, config) => {
