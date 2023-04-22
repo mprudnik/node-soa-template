@@ -145,14 +145,16 @@ export class DistributedBus {
       payload: JSON.stringify({ meta, data }),
     };
 
+    this.#logger.info({ callId, streamKey }, `Calling ${serviceName}/${method}`);
+
+    const callPromise = this.#promisifyCall(serviceName, method, callId);
+
     const { maxCallStreamSize: threshold } = this.#options;
     await this.#redis.xAdd(streamKey, '*', payload, {
       TRIM: { strategy: 'MAXLEN', strategyModifier: '~', threshold },
     });
 
-    this.#logger.info({ callId, streamKey }, `Calling ${serviceName}/${method}`);
-
-    return this.#promisifyCall(serviceName, method, callId);
+    return callPromise;
   };
 
   /** @type {(service: string, method: string, callId: string) => Promise<any>} */
@@ -161,12 +163,14 @@ export class DistributedBus {
       const { callTimeout } = this.#options;
       const timeout = new AbortController();
 
-      this.#calls.set(callId, { resolve, timeout, time: Date.now() });
+      const time = Date.now();
+      this.#calls.set(callId, { resolve, timeout, time });
 
       setTimeout(callTimeout, null, { signal: timeout.signal })
         .then(() => {
           this.#calls.delete(callId);
           const message = 'Call timeout';
+          this.#logger.info({ callId, spentTime: Date.now() - time }, 'Processing time');
           /** @type CallResult */
           const result = [{ expected: false, message }, null];
           resolve(result);

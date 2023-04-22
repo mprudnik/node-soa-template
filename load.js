@@ -17,7 +17,7 @@ const instance = autocannon({
   body: JSON.stringify({ input: 'test' }),
   headers: { 'content-type': 'application/json' },
   connections: 100,
-  duration: 10,
+  duration: 2 * 60,
   setupClient,
 });
 
