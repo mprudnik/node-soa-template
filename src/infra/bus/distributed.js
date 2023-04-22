@@ -145,6 +145,8 @@ export class DistributedBus {
       payload: JSON.stringify({ meta, data }),
     };
 
+    const callPromise = this.#promisifyCall(serviceName, method, callId);
+
     const { maxCallStreamSize: threshold } = this.#options;
     await this.#redis.xAdd(streamKey, '*', payload, {
       TRIM: { strategy: 'MAXLEN', strategyModifier: '~', threshold },
@@ -152,7 +154,7 @@ export class DistributedBus {
 
     this.#logger.info({ callId, streamKey }, `Calling ${serviceName}/${method}`);
 
-    return this.#promisifyCall(serviceName, method, callId);
+    return callPromise;
   };
 
   /** @type {(service: string, method: string, callId: string) => Promise<any>} */
